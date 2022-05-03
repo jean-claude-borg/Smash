@@ -3,22 +3,25 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h> 
-#include "input.h"
 #include "parser.h"
 #include "commands.h"
 #include "linenoise.h"
 
 int main()
-{   
+{
+    system("clear");
     initShellVariables();
     while(true)
     {
         //prompt user and store input
-        fprintf(stdout, "\n");
         char* buffer = linenoise(getenv("PROMPT"));
         //allows the up and down arrow keys to be used to access preious commands
         linenoiseHistoryAdd(buffer);
-        
+
+        //if user inputs nothing, skip parsing of commands
+        if(buffer[0] == NULL)
+            continue;
+
         //parse input
         char **list = parser(buffer);
 
@@ -33,13 +36,16 @@ int main()
         varExpansion(list);
         //unparses and rejoins any tokens which were within quotes
         undoQuotes(list);
+        //checks for pipeline character
+        bool hasPipeline = false;
+        hasPipeline = checkForPipeline(list);
 
         //handles variable assigning and reassigning, if detectVarReassigns returns 1, then a variable was modified
         if(detectVarReassigns(list) == 1)
             continue;
         
         //runs commands by using seperate processes
-        executeCommands(list);
+        executeCommands(list, hasPipeline);
         
         free(buffer);
         free(list);

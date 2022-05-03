@@ -27,14 +27,20 @@ char **parser(char *input)
         tokenList[counter] = token;
         counter++;
 
-        //dynamicallky allocates more memory if the input is larger than the buffer
+        //dynamically allocates more memory if the input is larger than the buffer
         if(counter >= bufferSize)
         {
             bufferSize += bufferIncrements;
             tokenList = realloc(tokenList, bufferSize * sizeof(char*));
         }
         token = strtok(NULL, delimiter);
-    }    
+    }
+    //prints tokenList for debugging
+    for(int i = 0; i < 10; i++)
+    {
+        //printf("\n%s", tokenList[i]);
+    }
+    printf("\n");
     tokenList[counter] = NULL;
     return tokenList;
 }
@@ -106,4 +112,19 @@ char **removeQuotes(char** tokenList)
             }
         }
     }
+}
+
+bool checkForPipeline(char** tokenList)
+{
+    int listSize = 0;
+    //calculating amount of tokens in list
+    while(tokenList[listSize] != NULL)
+        listSize++;
+
+    for(int i = 0; i < listSize; i++)
+    {
+        if(strcmp(tokenList[i], "|") == 0)
+            return true;
+    }
+    return false;
 }

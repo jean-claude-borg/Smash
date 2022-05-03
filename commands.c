@@ -53,15 +53,17 @@ int (*internals[])(char **) =
     &internalUnset
 };
 
-void processCommand(char* buffer)
+void processCommandsFromFile(char* buffer)
 {
     char **list = parser(buffer);
 
-    if(detectVarReassigns(list) == 1)return; 
+    if(detectVarReassigns(list) == 1)return;
     varExpansion(list);
     undoQuotes(list);
+    bool hasPipeline = false;
+    hasPipeline = checkForPipeline(list);
 
-    executeCommands(list);
+    executeCommands(list, hasPipeline);
 }
 
 int countInternals() 
@@ -72,7 +74,7 @@ int countInternals()
 int internalCd(char** args)
 {
     if(args[1] == NULL)
-        fprintf(stderr, "Arguments were expected but not provided\n");
+        fprintf(stderr, "Error: no arguments provided\n");
     else if(chdir(args[1]) < 0)
         fprintf(stderr, "Error while changing directory\n");
 
@@ -82,10 +84,9 @@ int internalCd(char** args)
 
 int internalHelp(char** args)
 {
-    printf("\nThis is the smash terminal");
-    printf("\nVersion: 1.0");
-    printf("\nThe following built in commands are supported: cd, help, cwd, clear, echo, showvar, showenv, export, unset, source and exit");
-    printf("\nTo use, write a command name followed by any arguments\n");
+    fprintf(stdout ,"\nThis is the smash shell version 1.0");
+    fprintf(stdout ,"\nThe following built in commands are supported: cd, help, cwd, clear, echo, showvar, showenv, export, unset, source and exit");
+    fprintf(stdout ,"\nTo use, write a command name followed by any arguments\n\n");
 
     return 1;
 }
@@ -100,21 +101,23 @@ int internalCwd(char** args)
 {
     char dir[200];
     getcwd(dir, 200);
-    printf("\n %s \n", dir);
+    printf("%s \n", dir);
     return 1;
 }
 
 int internalClear(char** args)
 {
-    system("clear");
+
+    //fprintf(stdout, " ");
+    system("reset");
     return 1;
 }
 
 int internalEcho(char** args)
 {
     int i = 0;
-    while(args[++i] != NULL)
-        fprintf(stdout,"%s ", args[i]);
+    while(args[i++] != NULL)
+        fprintf(stdout,"\n%s ", args[i]);
 
     return 1;
 }
@@ -132,6 +135,7 @@ int internalShowvar(char** args)
             if(strcmp(args[1], shellVarName[j]) == 0)
                 fprintf(stdout, "%s ", shellVarValue[j]);
     }
+    fprintf(stdout, "\n");
 
     return 1;
 }
@@ -146,7 +150,7 @@ int internalShowenv(char** args)
     
     else while(args[++i] != NULL)
         fprintf(stdout, "%s ", getenv(args[i]));
-    
+
     return 1;
 }
 
@@ -192,7 +196,7 @@ int getSource(char* filePath)
             while (getline(&line, &len, file) != -1)
             {
                 line[strcspn(line, "\n")] = 0;
-                processCommand(line);
+                processCommandsFromFile(line);
             }
             fclose(file);
             return 1;
@@ -310,7 +314,7 @@ int startProcesses(char **args)
     //checks if fork was successful
     if(pid < 0)
     {
-        fprintf(stderr, "Error while forking process\n");
+        fprintf(stderr, "Error forking process\n");
         exit(EXIT_FAILURE);
     }
     //checks for child process and calls execvp
@@ -319,7 +323,7 @@ int startProcesses(char **args)
         int execResult = execvp(args[0], args);
         if(execResult < 0)
         {
-            fprintf(stderr, "Error while executing command\n");
+            fprintf(stderr, "Error executing command: command does not exist\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -335,7 +339,7 @@ int startProcesses(char **args)
     return 1;
 }
 
-int executeCommands(char **args)
+int executeCommands(char **args, bool hasPipeline)
 {
     //checks if no command was entered
     if (args[0] == NULL)
@@ -350,13 +354,48 @@ int executeCommands(char **args)
             return 1;
         }
     }
+    if(hasPipeline)
+    {
+        int totalCommandsBeforePipeline = 0;
+        int totalCommandsAfterPipeline = 0;
+        int counter = 0;
+        while(strcmp(args[counter], "|") != 0)
+        {
+            counter++;
+            totalCommandsBeforePipeline++;
+        }
+        //skips over the pipeline character
+        counter++;
+        while(args[counter] != NULL)
+        {
+            counter++;
+            totalCommandsAfterPipeline++;
+        }
 
+        //execvp(args[0], totalCommandsBeforePipeline-1);
+
+        char**args1 = malloc(sizeof(char*) * totalCommandsBeforePipeline);
+        char**args2 = malloc(sizeof(char*) * totalCommandsAfterPipeline);
+
+        //splits list into 2, one list for before pipeline, one for after
+        for(int i = 0; i < totalCommandsBeforePipeline; i++)
+            args1[i] = args[i];
+        for(int i = 1; i <= totalCommandsAfterPipeline; i++)
+            args2[i-1] = args[totalCommandsBeforePipeline+i];
+
+        //use built in linux pipes
+        //execvp(args1[0], args1);
+        return 1;
+    }
+
+    //executes internal commands
     for (int i = 0; i < countInternals(); i++) 
     {
         if (strcmp(args[0], commandList[i]) == 0)
             return (*internals[i])(args);
     
     }
+    //if command is not an internal command, treats it as a bash command
     return startProcesses(args);
 }
 

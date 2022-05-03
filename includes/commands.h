@@ -21,4 +21,4 @@ int getSource(char* filePath);
 int countInternals();
 
 int startProcesses(char **args);
-int executeCommands(char **args);
+int executeCommands(char **args, bool hasPipeLine);
