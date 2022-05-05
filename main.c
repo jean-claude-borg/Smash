@@ -23,7 +23,6 @@ int main()
             screenCleared = false;
         //prompt user and store input,
         char* buffer = linenoise(getenv("PROMPT"));
-        buffer = linenoise(getenv("PROMPT"));
         //allows the up and down arrow keys to be used to access preious commands
         linenoiseHistoryAdd(buffer);
 
