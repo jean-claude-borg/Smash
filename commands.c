@@ -13,6 +13,14 @@ char** shellVarName;
 char** shellVarValue;
 int shellVarListSize = 8;
 
+#define ANSI_COLOR_RED     "\x1b[31m"
+#define ANSI_COLOR_GREEN   "\x1b[32m"
+#define ANSI_COLOR_YELLOW  "\x1b[33m"
+#define ANSI_COLOR_BLUE    "\x1b[34m"
+#define ANSI_COLOR_MAGENTA "\x1b[35m"
+#define ANSI_COLOR_CYAN    "\x1b[36m"
+#define ANSI_COLOR_RESET   "\x1b[0m"
+
 void initShellVariables()
 {
     shellVarName = malloc(sizeof(char*) * shellVarListSize);
@@ -28,7 +36,7 @@ void initShellVariables()
     shellVarValue = malloc(sizeof(char*) * shellVarListSize);
     shellVarValue[0] = getenv("PATH");
     shellVarValue[1] = "smash-1.0: ";
-    setenv("PROMPT", "smash-1.0: ", 1);
+    setenv("PROMPT", ANSI_COLOR_BLUE"smash-1.0: "ANSI_COLOR_RESET, 1);
     shellVarValue[2] = "";
     shellVarValue[3] = getenv("USER");
     shellVarValue[4] = getenv("HOME");
@@ -107,17 +115,17 @@ int internalCwd(char** args)
 
 int internalClear(char** args)
 {
-
     //fprintf(stdout, " ");
-    system("reset");
+    system("clear");
+    screenCleared = true;
     return 1;
 }
 
 int internalEcho(char** args)
 {
-    int i = 0;
-    while(args[i++] != NULL)
-        fprintf(stdout,"\n%s ", args[i]);
+    for(int i = 1; args[i] != NULL; i++) {
+        fprintf(stdout, "%s\n ", args[i]);
+    }
 
     return 1;
 }
@@ -216,7 +224,7 @@ int varExpansion(char** tokenList)
         {
             char* token = tokenList[listPos];
             //only expands variable if not in quotation marks
-            if(token[0] == '$' && token[0] != '"') 
+            if(token[0] == '$' && token[-1] != '"')
             {   
                 //removes dollar sign from string
                 for(int i = 0; i < strlen(token); i++)
@@ -384,7 +392,43 @@ int executeCommands(char **args, bool hasPipeline)
             args2[i-1] = args[totalCommandsBeforePipeline+i];
 
         //use built in linux pipes
-        //execvp(args1[0], args1);
+        pid_t pid;
+        int fd[2];
+
+        pipe(fd);
+        pid = fork();
+        #define READ_END 0
+        #define WRITE_END 1
+        if(pid==0)
+        {
+            dup2(fd[WRITE_END], STDOUT_FILENO);
+            close(fd[WRITE_END]);
+            close(fd[READ_END]);
+            execlp(*args1, *args1, args1[1], (char*) NULL);
+            fprintf(stderr, "Failed to execute '%s'\n", *args1);
+            exit(1);
+        }
+        else
+        {
+            pid=fork();
+
+            if(pid==0)
+            {
+                dup2(fd[READ_END], STDIN_FILENO);
+                close(fd[WRITE_END]);
+                close(fd[READ_END]);
+                execlp(*args2, *args2, args2[1], (char*) NULL);
+                fprintf(stderr, "Failed to execute '%s'\n", *args2);
+                exit(1);
+            }
+            else
+            {
+                int status;
+                close(fd[READ_END]);
+                close(fd[WRITE_END]);
+                waitpid(pid, &status, 0);
+            }
+        }
         return 1;
     }
 

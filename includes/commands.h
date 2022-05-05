@@ -22,3 +22,5 @@ int countInternals();
 
 int startProcesses(char **args);
 int executeCommands(char **args, bool hasPipeLine);
+
+extern bool screenCleared;

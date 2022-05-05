@@ -6,15 +6,24 @@
 #include "parser.h"
 #include "commands.h"
 #include "linenoise.h"
+//screenCleared is defined in commands.h as extern
+bool screenCleared;
 
 int main()
 {
     system("clear");
+    screenCleared = true;
     initShellVariables();
     while(true)
     {
-        //prompt user and store input
+        // if screen is cleared, no new line is added
+        if(!screenCleared)
+            fprintf(stdout,"\n");
+        else
+            screenCleared = false;
+        //prompt user and store input,
         char* buffer = linenoise(getenv("PROMPT"));
+        buffer = linenoise(getenv("PROMPT"));
         //allows the up and down arrow keys to be used to access preious commands
         linenoiseHistoryAdd(buffer);
 
