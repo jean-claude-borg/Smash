@@ -4,8 +4,21 @@
 #include <string.h>
 #include "parser.h"
 
-char **parser(char *input)
+char* cleanInput(char* buffer)
 {
+    int positionOfNewLine = 0;
+    while(buffer[positionOfNewLine] != 10)
+    {
+        positionOfNewLine++;
+    }
+    buffer[positionOfNewLine] = 0;
+    return buffer;
+}
+
+char **parser(char *input2)
+{
+    char* input = cleanInput(input2);
+
     int bufferSize = 64;
     int bufferIncrements = 64;
     int counter = 0;

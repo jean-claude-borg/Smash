@@ -6,6 +6,10 @@
 #include "parser.h"
 #include "commands.h"
 #include "linenoise.h"
+#include "input.h"
+#include<readline/readline.h>
+#include<readline/history.h>
+
 //screenCleared is defined in commands.h as extern
 bool screenCleared;
 
@@ -21,14 +25,15 @@ int main()
             fprintf(stdout,"\n");
         else
             screenCleared = false;
-        //prompt user and store input,
-        char* buffer = linenoise(getenv("PROMPT"));
-        //allows the up and down arrow keys to be used to access preious commands
-        linenoiseHistoryAdd(buffer);
 
+        char* buffer = getUserInput();
         //if user inputs nothing, skip parsing of commands
-        if(buffer[0] == NULL)
+        if(buffer == NULL || buffer[0] == 10 || buffer[0] == 0)
             continue;
+
+        //allows the up and down arrow keys to be used to access preious commands
+        using_history();
+        add_history(buffer);
 
         //parse input
         char **list = parser(buffer);
@@ -52,7 +57,7 @@ int main()
         if(detectVarReassigns(list) == 1)
             continue;
         
-        //runs commands by using seperate processes
+        //runs commands by using separate processes
         executeCommands(list, hasPipeline);
         
         free(buffer);

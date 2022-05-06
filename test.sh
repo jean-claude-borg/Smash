@@ -1,4 +1,4 @@
 echo hello
-cd /media
+cd /home
 cwd
 help
