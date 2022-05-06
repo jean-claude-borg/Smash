@@ -17,7 +17,7 @@ int main()
 {
     system("clear");
     screenCleared = true;
-    initShellVariables();
+    initShell();
     while(true)
     {
         // if screen is cleared, no new line is added

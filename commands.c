@@ -21,6 +21,30 @@ int shellVarListSize = 8;
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
+#define HOST_NAME_MAX 20
+
+void initShell()
+{
+    //set prompt
+    char* userName = getenv("USERNAME");
+    char hostName[HOST_NAME_MAX];
+    gethostname(hostName, HOST_NAME_MAX);
+    char* prompt = malloc(sizeof (char*) + strlen(userName) + sizeof("@") + strlen(hostName) + sizeof ("]") + sizeof (": "));
+    prompt[0] = 91; // 91 = ascii "["
+    strcat(prompt,userName);
+    strcat(prompt, "@");
+    strcat(prompt, hostName);
+    strcat(prompt,"]");
+    strcat(prompt,": ");
+    setenv("PROMPT", prompt, 1);
+
+    //set gnome-terminal window title
+    printf ("\e]2;Smash-1.0\a");
+
+    //init shell variables
+    initShellVariables();
+}
+
 void initShellVariables()
 {
     shellVarName = malloc(sizeof(char*) * shellVarListSize);
@@ -35,8 +59,7 @@ void initShellVariables()
     
     shellVarValue = malloc(sizeof(char*) * shellVarListSize);
     shellVarValue[0] = getenv("PATH");
-    shellVarValue[1] = "smash-1.0: ";
-    setenv("PROMPT", ANSI_COLOR_BLUE"smash-1.0: "ANSI_COLOR_RESET, 1);
+    shellVarValue[1] = "[smash-1.0]: ";
     shellVarValue[2] = "";
     shellVarValue[3] = getenv("USER");
     shellVarValue[4] = getenv("HOME");

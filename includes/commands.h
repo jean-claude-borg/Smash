@@ -1,5 +1,6 @@
 #pragma once
 
+void initShell();
 void initShellVariables();
 int varExpansion(char** tokenList);
 int reassignVar(char* var, char* newValue);

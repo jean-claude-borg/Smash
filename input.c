@@ -9,6 +9,5 @@ char* getUserInput()
     char* prompt = getenv("PROMPT");
     char* buffer; // = malloc(sizeof (char) * BUFFER_SIZE);
     buffer = readline(prompt);
-    //fgets(buffer,BUFFER_SIZE,stdin);
     return buffer;
 }

@@ -1,3 +1,5 @@
 .vscode
 build
 main.exe
+.idea/
+cmake-build-debug
