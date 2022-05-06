@@ -20,6 +20,9 @@ int shellVarListSize = 8;
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_BOLD   "\x1b[1m"
+#define ANSI_COLOR_ITALIC   "\x1b[3m"
+#define ANSI_COLOR_UNDERLINE   "\x1b[4m"
 
 #define HOST_NAME_MAX 20
 
@@ -28,14 +31,19 @@ void initShell()
     //set prompt
     char* userName = getenv("USERNAME");
     char hostName[HOST_NAME_MAX];
+    char* bold = ANSI_COLOR_BOLD;
+    char* reset = ANSI_COLOR_RESET;
     gethostname(hostName, HOST_NAME_MAX);
-    char* prompt = malloc(sizeof (char*) + strlen(userName) + sizeof("@") + strlen(hostName) + sizeof ("]") + sizeof (": "));
-    prompt[0] = 91; // 91 = ascii "["
+    char* prompt = malloc(strlen(ANSI_COLOR_BOLD) + sizeof (char*) + strlen(userName) + sizeof("@") + strlen(hostName) + sizeof ("]") + sizeof (": ") + strlen(ANSI_COLOR_RESET));
+    //prompt[0] = 91; // 91 = ascii "["
+    strcat(prompt, bold);
+    strcat(prompt, "[");
     strcat(prompt,userName);
     strcat(prompt, "@");
     strcat(prompt, hostName);
     strcat(prompt,"]");
     strcat(prompt,": ");
+    strcat(prompt,reset);
     setenv("PROMPT", prompt, 1);
 
     //set gnome-terminal window title
