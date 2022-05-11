@@ -20,11 +20,15 @@ int shellVarListSize = 8;
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+#define ANSI_COLOR_RESET_BOLD   "\x1b[22m"
 #define ANSI_COLOR_BOLD   "\x1b[1m"
+#define ANSI_COLOR_INVERSE   "\x1b[7m"
+#define ANSI_COLOR_RESET_INVERSE   "\x1b[27m"
 #define ANSI_COLOR_ITALIC   "\x1b[3m"
 #define ANSI_COLOR_UNDERLINE   "\x1b[4m"
 
 #define HOST_NAME_MAX 20
+char* prompt;
 
 void initShell()
 {
@@ -32,9 +36,9 @@ void initShell()
     char* userName = getenv("USERNAME");
     char hostName[HOST_NAME_MAX];
     char* bold = ANSI_COLOR_BOLD;
-    char* reset = ANSI_COLOR_RESET;
+    char* reset = ANSI_COLOR_RESET_BOLD;
     gethostname(hostName, HOST_NAME_MAX);
-    char* prompt = malloc(strlen(ANSI_COLOR_BOLD) + sizeof (char*) + strlen(userName) + sizeof("@") + strlen(hostName) + sizeof ("]") + sizeof (": ") + strlen(ANSI_COLOR_RESET));
+    prompt = malloc(strlen(ANSI_COLOR_BOLD) + sizeof (char*) + strlen(userName) + sizeof("@") + strlen(hostName) + sizeof ("]") + sizeof (": ") + strlen(ANSI_COLOR_RESET));
     //prompt[0] = 91; // 91 = ascii "["
     strcat(prompt, bold);
     strcat(prompt, "[");
@@ -67,12 +71,12 @@ void initShellVariables()
     
     shellVarValue = malloc(sizeof(char*) * shellVarListSize);
     shellVarValue[0] = getenv("PATH");
-    shellVarValue[1] = "[smash-1.0]: ";
-    shellVarValue[2] = "";
+    shellVarValue[1] = prompt;
+    shellVarValue[2] = getenv("PWD");
     shellVarValue[3] = getenv("USER");
     shellVarValue[4] = getenv("HOME");
     shellVarValue[5] = getenv("SHELL");
-    shellVarValue[6] = "";
+    shellVarValue[6] = getenv("TERM");
     shellVarValue[7] = "";
 }
 
@@ -100,9 +104,11 @@ void processCommandsFromFile(char* buffer)
     varExpansion(list);
     undoQuotes(list);
     bool hasPipeline = false;
+    bool hasAmpersand = false;
     hasPipeline = checkForPipeline(list);
+    hasAmpersand = checkForAmpersand(list);
 
-    executeCommands(list, hasPipeline);
+    executeCommands(list, hasPipeline, hasAmpersand);
 }
 
 int countInternals() 
@@ -362,7 +368,7 @@ int startProcesses(char **args)
         int execResult = execvp(args[0], args);
         if(execResult < 0)
         {
-            fprintf(stderr, "Error executing command: command does not exist\n");
+            fprintf(stderr, "command does not exist\n");
             exit(EXIT_FAILURE);
         }
     }
@@ -378,7 +384,7 @@ int startProcesses(char **args)
     return 1;
 }
 
-int executeCommands(char **args, bool hasPipeline)
+int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
 {
     //checks if no command was entered
     if (args[0] == NULL)
@@ -394,6 +400,20 @@ int executeCommands(char **args, bool hasPipeline)
         }
     }
     if(hasPipeline)
+    {
+        executeCommandsWithPipeline(args);
+        return 1;
+    }
+    else if(hasAmpersand)
+    {
+        executeCommandsWithAmpersand(args);
+        return 1;
+    }
+    else { executeInternalCommands(args); }
+    return 1;
+}
+
+    int executeCommandsWithPipeline(char**  args)
     {
         int totalCommandsBeforePipeline = 0;
         int totalCommandsAfterPipeline = 0;
@@ -439,21 +459,17 @@ int executeCommands(char **args, bool hasPipeline)
             fprintf(stderr, "Failed to execute '%s'\n", *args1);
             exit(1);
         }
-        else
-        {
-            pid=fork();
+        else {
+            pid = fork();
 
-            if(pid==0)
-            {
+            if (pid == 0) {
                 dup2(fd[READ_END], STDIN_FILENO);
                 close(fd[WRITE_END]);
                 close(fd[READ_END]);
-                execlp(*args2, *args2, args2[1], (char*) NULL);
+                execlp(*args2, *args2, args2[1], (char *) NULL);
                 fprintf(stderr, "Failed to execute '%s'\n", *args2);
                 exit(1);
-            }
-            else
-            {
+            } else {
                 int status;
                 close(fd[READ_END]);
                 close(fd[WRITE_END]);
@@ -463,15 +479,116 @@ int executeCommands(char **args, bool hasPipeline)
         return 1;
     }
 
-    //executes internal commands
-    for (int i = 0; i < countInternals(); i++) 
+    int executeCommandsWithAmpersand(char**  args)
+{
+    int totalCommandsBeforeAmpersand = 0;
+    int totalCommandsAfterAmpersand = 0;
+    int counter = 0;
+    while(strcmp(args[counter], "&&") != 0)
     {
-        if (strcmp(args[0], commandList[i]) == 0)
-            return (*internals[i])(args);
-    
+        counter++;
+        totalCommandsBeforeAmpersand++;
     }
-    //if command is not an internal command, treats it as a bash command
-    return startProcesses(args);
+    while(args[counter] != NULL)
+    {
+        counter++;
+        totalCommandsAfterAmpersand++;
+    }
+
+    char**args1 = malloc(sizeof(char*) * totalCommandsBeforeAmpersand);
+    char**args2 = malloc(sizeof(char*) * totalCommandsAfterAmpersand);
+
+    //splits list into 2, one list for before pipeline, one for after
+    for(int i = 0; i < totalCommandsBeforeAmpersand; i++) {
+        args1[i] = args[i];
+        //adds a null character after the last command in args1, so that execvp works properly
+        if(i == totalCommandsBeforeAmpersand-1){args1[i+1] = NULL;}
+    }
+    for(int i = 1; i <= totalCommandsAfterAmpersand; i++)
+        args2[i-1] = args[totalCommandsBeforeAmpersand + i];
+
+    pid_t pid = fork();
+    int childStatus;
+
+    if(pid < 0)
+    {
+        fprintf(stderr, "Error forking process\n");
+        exit(EXIT_FAILURE);
+    }
+        //checks for child process and calls execvp
+    else if(pid == 0)
+    {
+        bool internalCommandFound = false;
+        //if internal command is detected, it is run and execvp is skipped
+        for (int i = 0; i < countInternals(); i++) {
+            if (strcmp(args1[0], commandList[i]) == 0) {
+                (*internals[i])(args1);
+                internalCommandFound = true;
+            }
+        }
+        if(!internalCommandFound)
+        {
+            int execResult = execvp(args1[0], args1);
+            if (execResult < 0) {
+                fprintf(stderr, "Error executing command: command does not exist\n");
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+        //checks for parent process and makes it wait for child process to complete
+    else
+    {
+        pid_t wpid;
+        do
+        {
+            wpid = waitpid(pid, &childStatus, WUNTRACED);
+        } while (!WIFEXITED(childStatus) && !WIFSIGNALED(childStatus));
+    }
+
+    pid_t child2Pid = fork();
+    if(child2Pid < 0)
+    {
+        fprintf(stderr, "Error forking process\n");
+        exit(EXIT_FAILURE);
+    }
+    else if(child2Pid == 0)
+    {
+        bool internalCommandFound = false;
+        //if internal command is detected, it is run and execvp is skipped
+        for (int i = 0; i < countInternals(); i++) {
+            if (strcmp(args2[0], commandList[i]) == 0) {
+                (*internals[i])(args2);
+                internalCommandFound = true;
+            }
+        }
+        if(!internalCommandFound)
+        {
+            int execResult = execvp(args2[0], args2);
+            if (execResult < 0) {
+                fprintf(stderr, "Error executing command: command does not exist\n");
+                exit(EXIT_FAILURE);
+            }
+        }    }
+    else
+    {
+        pid_t wpid;
+        do
+        {
+            wpid = waitpid(child2Pid, &childStatus, WUNTRACED);
+        } while (!WIFEXITED(childStatus) && !WIFSIGNALED(childStatus));
+    }
+
+    return 0;
 }
+
+    int executeInternalCommands(char** args) {    //executes internal commands
+        for (int i = 0; i < countInternals(); i++) {
+            if (strcmp(args[0], commandList[i]) == 0)
+                return (*internals[i])(args);
+        }
+        //if command is not an internal command, treats it as a bash command
+        return startProcesses(args);
+    }
+
 
 

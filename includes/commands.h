@@ -22,6 +22,9 @@ int getSource(char* filePath);
 int countInternals();
 
 int startProcesses(char **args);
-int executeCommands(char **args, bool hasPipeLine);
+int executeCommands(char **args, bool hasPipeLine, bool hasAmpersand);
+int executeCommandsWithPipeline(char** args);
+int executeCommandsWithAmpersand(char**  args);
+int executeInternalCommands(char** args);
 
 extern bool screenCleared;

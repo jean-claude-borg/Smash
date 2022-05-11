@@ -51,14 +51,16 @@ int main()
         undoQuotes(list);
         //checks for pipeline character
         bool hasPipeline = false;
+        bool hasAmpersand = false;
         hasPipeline = checkForPipeline(list);
+        hasAmpersand = checkForAmpersand(list);
 
         //handles variable assigning and reassigning, if detectVarReassigns returns 1, then a variable was modified
         if(detectVarReassigns(list) == 1)
             continue;
         
         //runs commands by using separate processes
-        executeCommands(list, hasPipeline);
+        executeCommands(list, hasPipeline, hasAmpersand);
         
         free(buffer);
         free(list);

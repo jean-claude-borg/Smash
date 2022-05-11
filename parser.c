@@ -6,13 +6,13 @@
 
 char* cleanInput(char* buffer)
 {
-    int positionOfNewLine = 0;
-    while(buffer[positionOfNewLine] != 10)
-    {
-        positionOfNewLine++;
-    }
-    buffer[positionOfNewLine] = 0;
-    return buffer;
+//    int positionOfNewLine = 0;
+//    while(buffer[positionOfNewLine] != 10)
+//    {
+//        positionOfNewLine++;
+//    }
+//    buffer[positionOfNewLine] = 0;
+//    return buffer;
 }
 
 char **parser(char *input2)
@@ -137,6 +137,21 @@ bool checkForPipeline(char** tokenList)
     for(int i = 0; i < listSize; i++)
     {
         if(strcmp(tokenList[i], "|") == 0)
+            return true;
+    }
+    return false;
+}
+
+bool checkForAmpersand(char** tokenList)
+{
+    int listSize = 0;
+    //calculating amount of tokens in list
+    while(tokenList[listSize] != NULL)
+        listSize++;
+
+    for(int i = 0; i < listSize; i++)
+    {
+        if(strcmp(tokenList[i], "&&") == 0)
             return true;
     }
     return false;
