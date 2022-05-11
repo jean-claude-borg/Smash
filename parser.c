@@ -85,19 +85,30 @@ char **undoQuotes(char** tokenList)
     removeQuotes(tokenList);
 
     //concatenates all the strings in quotes to the first string in the quotes
-    int i = 0;
-    if(secondQuote - firstQuote > 1)
-    {    
-        while(secondQuote - i > firstQuote)
-        {
-            strncat(tokenList[secondQuote - i - 1], tokenList[secondQuote-i], strlen(tokenList[secondQuote-i]));
-            i++;
+    //int i = 0;
+//    if(secondQuote - firstQuote > 1)
+//    {
+//        while(secondQuote - i > firstQuote)
+//        {
+//            strcat(tokenList[secondQuote - i], "_");
+//            strncat(tokenList[secondQuote - i - 1], tokenList[secondQuote-i], strlen(tokenList[secondQuote-i]));
+//            i++;
+//        }
+//
+//        //clears the rest of the tokenlist of the redundant strings
+//        for(int counter = 1; counter <= i; counter++)
+//            tokenList[firstQuote+counter] = NULL;
+//
+//    }
+    if(secondQuote - firstQuote > 0)
+    {
+        int i;
+        for (i = 1; firstQuote + i <= secondQuote; i++) {
+            strcat(tokenList[firstQuote], " ");
+            strcat(tokenList[firstQuote], tokenList[firstQuote + i]);
         }
-
-        //clears the rest of the tokenlist of the redundant strings
-        for(int counter = 1; counter <= i; counter++)
-            tokenList[firstQuote+counter] = NULL;
-
+        for (int counter = 1; counter <= i; counter++)
+            tokenList[firstQuote + counter] = NULL;
     }
 }
 
