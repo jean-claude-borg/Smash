@@ -105,7 +105,7 @@ char **undoQuotes(char** tokenList)
         int i;
         for (i = 1; firstQuote + i <= secondQuote; i++) {
             strcat(tokenList[firstQuote], " ");
-            strcat(tokenList[firstQuote], tokenList[firstQuote + i]);
+            strncat(tokenList[firstQuote], tokenList[firstQuote + i], strlen(tokenList[firstQuote+i]));
         }
         for (int counter = 1; counter <= i; counter++)
             tokenList[firstQuote + counter] = NULL;
