@@ -26,6 +26,7 @@ int shellVarListSize = 8;
 #define ANSI_COLOR_RESET_INVERSE   "\x1b[27m"
 #define ANSI_COLOR_ITALIC   "\x1b[3m"
 #define ANSI_COLOR_UNDERLINE   "\x1b[4m"
+#define ANSI_COLOR_UNDERLINE_RESET   "\x1b[24m"
 
 #define HOST_NAME_MAX 20
 char* prompt;
@@ -51,7 +52,7 @@ void initShell()
     setenv("PROMPT", prompt, 1);
 
     //set gnome-terminal window title
-    printf ("\e]2;Smash-1.0\a");
+    printf ("\e]2;Smash-1.1\a");
 
     //init shell variables
     initShellVariables();
@@ -129,8 +130,9 @@ int internalCd(char** args)
 
 int internalHelp(char** args)
 {
-    fprintf(stdout ,"\nThis is the smash shell version 1.0");
-    fprintf(stdout ,"\nThe following built in commands are supported: cd, help, cwd, clear, echo, showvar, showenv, export, unset, source and exit");
+    fprintf(stdout ,"\nSmash shell version 1.1");
+    fprintf(stdout ,"\n\nBuiltin commands: \ncd\nhelp\ncwd\nclear\necho\nshowvar\nshowenv\nexport\nunset\nsource\nexit\n");
+    fprintf(stdout ,"\nAll the normal linux commands are also supported");
     fprintf(stdout ,"\nTo use, write a command name followed by any arguments\n\n");
 
     return 1;
@@ -351,39 +353,6 @@ int detectVarReassigns(char** tokenList)
     return 0;
 }
 
-int startProcesses(char **args)
-{
-    pid_t pid = fork();
-    int childStatus;
-
-    //checks if fork was successful
-    if(pid < 0)
-    {
-        fprintf(stderr, "Error forking process\n");
-        exit(EXIT_FAILURE);
-    }
-    //checks for child process and calls execvp
-    else if(pid == 0)
-    {
-        int execResult = execvp(args[0], args);
-        if(execResult < 0)
-        {
-            fprintf(stderr, "command does not exist\n");
-            exit(EXIT_FAILURE);
-        }
-    }
-    //checks for parent process and makes it wait for child process to complete
-    else
-    {
-        pid_t wpid;
-        do 
-        {
-            wpid = waitpid(pid, &childStatus, WUNTRACED);
-        } while (!WIFEXITED(childStatus) && !WIFSIGNALED(childStatus));
-    }
-    return 1;
-}
-
 int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
 {
     //checks if no command was entered
@@ -589,6 +558,39 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
         //if command is not an internal command, treats it as a bash command
         return startProcesses(args);
     }
+
+int startProcesses(char **args)
+{
+    pid_t pid = fork();
+    int childStatus;
+
+    //checks if fork was successful
+    if(pid < 0)
+    {
+        fprintf(stderr, "Error forking process\n");
+        exit(EXIT_FAILURE);
+    }
+        //checks for child process and calls execvp
+    else if(pid == 0)
+    {
+        int execResult = execvp(args[0], args);
+        if(execResult < 0)
+        {
+            fprintf(stderr, "%s: command not found, type help for command list\n", args[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+        //checks for parent process and makes it wait for child process to complete
+    else
+    {
+        pid_t wpid;
+        do
+        {
+            wpid = waitpid(pid, &childStatus, WUNTRACED);
+        } while (!WIFEXITED(childStatus) && !WIFSIGNALED(childStatus));
+    }
+    return 1;
+}
 
 
 
