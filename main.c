@@ -7,6 +7,7 @@
 #include "commands.h"
 #include "linenoise.h"
 #include "input.h"
+#include "errorHandler.h"
 #include<readline/readline.h>
 #include<readline/history.h>
 
@@ -17,6 +18,7 @@ int main()
 {
     system("clear");
     screenCleared = true;
+    buildCommandIndex();
     initShell();
     while(true)
     {

@@ -1,0 +1,3 @@
+#!/bin/bash
+rm commandIndex.txt
+compgen -c >> commandIndex.txt

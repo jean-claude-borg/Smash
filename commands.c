@@ -461,9 +461,11 @@ int executeCommandsWithPipeline(char**  args)
             exit(EXIT_SUCCESS);
         }
         else {
+            //wait for all children of parent process to end before forking again
             int childStatus;
             waitpid(-1, &childStatus, WIFEXITED(-1));
 
+            //second fork which spawns second process to execute the commands after pipeline character
             pid = fork();
 
             if (pid == 0) {
