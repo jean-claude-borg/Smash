@@ -8,6 +8,8 @@
 #include "commands.h"
 #include "parser.h"
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 extern char **environ;
 char** shellVarName;
 char** shellVarValue;
@@ -47,7 +49,7 @@ void initShell()
     strcat(prompt, "@");
     strcat(prompt, hostName);
     strcat(prompt,"]");
-    strcat(prompt,": ");
+    strcat(prompt,"$ ");
     strcat(prompt,reset);
     setenv("PROMPT", prompt, 1);
 
@@ -119,10 +121,13 @@ int countInternals()
 
 int internalCd(char** args)
 {
-    if(args[1] == NULL)
-        fprintf(stderr, "Error: no arguments provided\n");
-    else if(chdir(args[1]) < 0)
-        fprintf(stderr, "Error while changing directory\n");
+    if(args[1] == NULL) { fprintf(stderr, "Error: no arguments provided\n"); return 0;}
+    else if(chdir(args[1]) < 0) { fprintf(stderr, "Error: direcotry does not exist\n"); return 0;}
+
+    //runs internal cwd
+    char* cwd = "cwd";
+    char** cwdArg = &cwd;
+    executeInternalCommands(cwdArg);
 
     //returns 1 on success
     return 1;
@@ -131,7 +136,7 @@ int internalCd(char** args)
 int internalHelp(char** args)
 {
     fprintf(stdout ,"\nSmash shell version 1.1");
-    fprintf(stdout ,"\n\nBuiltin commands: \ncd\nhelp\ncwd\nclear\necho\nshowvar\nshowenv\nexport\nunset\nsource\nexit\n");
+    fprintf(stdout ,"\n\nBuiltin commands: \n\ncd\nhelp\ncwd\nclear\necho\nshowvar\nshowenv\nexport\nunset\nsource\nexit\n");
     fprintf(stdout ,"\nAll the normal linux commands are also supported");
     fprintf(stdout ,"\nTo use, write a command name followed by any arguments\n\n");
 
@@ -382,7 +387,7 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
     return 1;
 }
 
-    int executeCommandsWithPipeline(char**  args)
+int executeCommandsWithPipeline(char**  args)
     {
         int totalCommandsBeforePipeline = 0;
         int totalCommandsAfterPipeline = 0;
@@ -407,7 +412,11 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
 
         //splits list into 2, one list for before pipeline, one for after
         for(int i = 0; i < totalCommandsBeforePipeline; i++)
+        {
             args1[i] = args[i];
+            //adds a null character after the last command in args1, so that execlp works properly
+            if(i == totalCommandsBeforePipeline-1){args1[i+1] = NULL;}
+        }
         for(int i = 1; i <= totalCommandsAfterPipeline; i++)
             args2[i-1] = args[totalCommandsBeforePipeline+i];
 
@@ -419,25 +428,67 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
         pid = fork();
         #define READ_END 0
         #define WRITE_END 1
+
+        if(pid < 0)
+        {
+            fprintf(stderr, "Error forking process\n");
+            exit(EXIT_FAILURE);
+        }
+
         if(pid==0)
         {
             dup2(fd[WRITE_END], STDOUT_FILENO);
             close(fd[WRITE_END]);
             close(fd[READ_END]);
-            execlp(*args1, *args1, args1[1], (char*) NULL);
-            fprintf(stderr, "Failed to execute '%s'\n", *args1);
-            exit(1);
+
+            bool internalCommandFound = false;
+            //if internal command is detected, it is run and execvp is skipped
+            for (int i = 0; i < countInternals(); i++) {
+                if (strcmp(args1[0], commandList[i]) == 0) {
+                    (*internals[i])(args1);
+                    internalCommandFound = true;
+                }
+            }
+            if(!internalCommandFound)
+            {
+                //execlp(*args1, *args1, args1[1], (char*) NULL);
+                int execResult = execvp(args1[0], args1);
+                if (execResult < 0) {
+                    fprintf(stderr, "Error executing command: command does not exist\n");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            exit(EXIT_SUCCESS);
         }
         else {
+            int childStatus;
+            waitpid(-1, &childStatus, WIFEXITED(-1));
+
             pid = fork();
 
             if (pid == 0) {
                 dup2(fd[READ_END], STDIN_FILENO);
                 close(fd[WRITE_END]);
                 close(fd[READ_END]);
-                execlp(*args2, *args2, args2[1], (char *) NULL);
-                fprintf(stderr, "Failed to execute '%s'\n", *args2);
-                exit(1);
+
+                bool internalCommandFound = false;
+                //if internal command is detected, it is run and execvp is skipped
+                for (int i = 0; i < countInternals(); i++) {
+                    if (strcmp(args2[0], commandList[i]) == 0) {
+                        (*internals[i])(args2);
+                        internalCommandFound = true;
+                    }
+                }
+                if(!internalCommandFound)
+                {
+                    //execlp(*args2, *args2, args2[1], (char *) NULL);
+                    int execResult = execvp(args2[0], args2);
+                    if (execResult < 0) {
+                        fprintf(stderr, "Error executing command: command does not exist\n");
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                exit(EXIT_SUCCESS);
             } else {
                 int status;
                 close(fd[READ_END]);
@@ -448,7 +499,7 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
         return 1;
     }
 
-    int executeCommandsWithAmpersand(char**  args)
+int executeCommandsWithAmpersand(char**  args)
 {
     int totalCommandsBeforeAmpersand = 0;
     int totalCommandsAfterAmpersand = 0;
@@ -503,6 +554,7 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
                 exit(EXIT_FAILURE);
             }
         }
+        exit(EXIT_SUCCESS);
     }
         //checks for parent process and makes it wait for child process to complete
     else
@@ -537,7 +589,9 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
                 fprintf(stderr, "Error executing command: command does not exist\n");
                 exit(EXIT_FAILURE);
             }
-        }    }
+        }
+        exit(EXIT_SUCCESS);
+    }
     else
     {
         pid_t wpid;
@@ -550,7 +604,7 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
     return 0;
 }
 
-    int executeInternalCommands(char** args) {    //executes internal commands
+int executeInternalCommands(char** args) {    //executes internal commands
         for (int i = 0; i < countInternals(); i++) {
             if (strcmp(args[0], commandList[i]) == 0)
                 return (*internals[i])(args);
@@ -593,4 +647,4 @@ int startProcesses(char **args)
 }
 
 
-
+#pragma clang diagnostic pop
