@@ -16,23 +16,30 @@ bool screenCleared;
 
 int main()
 {
+    bool userInputtedNothing = false;
+
     system("clear");
     screenCleared = true;
-    buildCommandIndex();
-    //calculateWordSimiliarity("sork");
     initShell();
+    buildCommandIndex();
     while(true)
     {
         // if screen is cleared, no new line is added
-        if(!screenCleared)
+        if(!screenCleared && !userInputtedNothing)
             fprintf(stdout,"\n");
         else
+        {
             screenCleared = false;
+            userInputtedNothing = false;
+        }
 
         char* buffer = getUserInput();
         //if user inputs nothing, skip parsing of commands
         if(buffer == NULL || buffer[0] == 10 || buffer[0] == 0)
+        {
+            userInputtedNothing = true;
             continue;
+        }
 
         //allows the up and down arrow keys to be used to access preious commands
         using_history();

@@ -48,7 +48,12 @@ void buildCommandIndex()
 void handleCommandNotFound(char* word)
 {
     char* closestWord = calculateWordSimiliarity(word);
-    fprintf(stdout, "\n%s: command not found, did you mean %s", word, closestWord);
+
+    //replaces newline character at end of word with null terminator
+    int closestWordLength = strlen(closestWord);
+    closestWord[closestWordLength-1] = 0;
+
+    fprintf(stdout, "%s: command not found, did you mean %s? Type help for more information\n", word, closestWord);
 }
 
 char* calculateWordSimiliarity(char* word)
