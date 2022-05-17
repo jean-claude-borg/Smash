@@ -1,3 +1,5 @@
 #!/bin/bash
-rm commandIndex.txt
-compgen -c >> commandIndex.txt
+compgen -c > commandIndex.txt
+sort -f commandIndex.txt > temp.txt
+cp temp.txt commandIndex.txt
+rm temp.txt

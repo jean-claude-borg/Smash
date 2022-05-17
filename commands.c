@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include "commands.h"
 #include "parser.h"
+#include "errorHandler.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
@@ -632,7 +633,8 @@ int startProcesses(char **args)
         int execResult = execvp(args[0], args);
         if(execResult < 0)
         {
-            fprintf(stderr, "%s: command not found, type help for command list\n", args[0]);
+            //fprintf(stderr, "%s: command not found, type help for command list\n", args[0]);
+            handleCommandNotFound(args[0]);
             exit(EXIT_FAILURE);
         }
     }

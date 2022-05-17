@@ -19,6 +19,7 @@ int main()
     system("clear");
     screenCleared = true;
     buildCommandIndex();
+    //calculateWordSimiliarity("sork");
     initShell();
     while(true)
     {
@@ -67,6 +68,5 @@ int main()
         free(buffer);
         free(list);
     }
-
     return 0;
 } 
