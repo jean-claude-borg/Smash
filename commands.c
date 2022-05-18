@@ -36,17 +36,22 @@ int shellVarListSize = 8;
 char* prompt;
 char tempPath[1024];
 
-char* getRootPath()
-{
+char* getRootPath() {
     getcwd(tempPath, 1024);
-    int pathLength = strlen(tempPath);
+    int pathLength = (int)strlen(tempPath);
     int slashPosition = 0;
-    for(int i = 0; i < pathLength; i++)
-    {
-        if(tempPath[i] == 47)
-        {
+    for (int i = 0; i < pathLength; i++) {
+        if (tempPath[i] == 47) {
             slashPosition = i;
         }
+    }
+    char *path = &tempPath[slashPosition + 1];
+    char* homeWithSlash = getenv("HOME");
+    char* home = &homeWithSlash[6];
+    if (strcmp(home, path) == 0)
+    {
+        tempPath[slashPosition+1] = 126;
+        tempPath[slashPosition+2] = 0;
     }
     return &tempPath[slashPosition+1];
 }
