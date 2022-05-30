@@ -40,6 +40,8 @@ aa-unconfined
 ab
 acceleration_speed
 accessdb
+aclocal
+aclocal-1.16
 aconnect
 acpi
 acpid
@@ -84,7 +86,6 @@ apparmor_parser
 apparmor_status
 appearance-menu
 applygnupgdefaults
-apply-tiling-settings
 appstream-builder
 appstream-compose
 appstream-util
@@ -120,7 +121,15 @@ aulastlog
 aureport
 ausearch
 ausyscall
+autoconf
+autoheader
+autom4te
+automake
+automake-1.16
 autopoint
+autoreconf
+autoscan
+autoupdate
 autrace
 auvirt
 avahi-autoipd
@@ -161,6 +170,7 @@ bd_splice
 bg
 bind
 biosdecode
+bison
 bjoentegaard
 blkdeactivate
 blkdiscard
@@ -244,10 +254,14 @@ cancel
 capsh
 captest
 captoinfo
+cargo
+cargo-clippy
+cargo-fmt
 case
 cat
 catman
 cc
+ccache
 ccmake
 cd
 cd-convert
@@ -337,6 +351,7 @@ clang-repl
 clang-scan-deps
 clang-tidy
 clear
+clippy-driver
 clockdiff
 cmake
 cmake-gui
@@ -373,6 +388,7 @@ coredumpctl
 corelist
 corrupt_mpeg2
 count
+cowpatty
 cp
 cpack
 cpaldjvu
@@ -518,6 +534,9 @@ djvutoxml
 djvutxt
 djvuxmlparser
 djxl
+dmenu
+dmenu_path
+dmenu_run
 dmesg
 dmeventd
 dmevent_tool
@@ -557,6 +576,7 @@ dvconnect
 dvcont
 dvipdf
 dwebp
+dwm
 dwp
 dynamic-wallpaper-editor
 e2freefrag
@@ -716,6 +736,9 @@ findfs
 findmnt
 findssl.sh
 firefox
+fish
+fish_indent
+fish_key_reader
 fixparts
 fixproc
 fix-qdf
@@ -726,6 +749,8 @@ flashrom
 flatpak
 flatpak-bisect
 flatpak-coredumpctl
+flex
+flex++
 flock
 floppyd
 floppyd_installtest
@@ -855,6 +880,7 @@ genisoimage
 genl
 genl-ctrl-list
 gennorm2
+genpmk
 genrb
 gensprep
 geqn
@@ -1107,6 +1133,7 @@ handy-1-demo
 hardlink
 has160-hash
 hash
+hashcat
 haveged
 hb-ot-shape-closure
 hb-shape
@@ -1178,6 +1205,7 @@ httxt2dbm
 hwclock
 hwinfo
 i386
+i686-pc-linux-gnu-pkg-config
 iagno
 ibus
 ibus-daemon
@@ -1218,6 +1246,7 @@ idn
 idn2
 iecset
 if
+ifnames
 ifstat
 ijs_client_example
 ijs-config
@@ -1420,6 +1449,7 @@ less
 lessecho
 lesskey
 let
+lex
 lexgrog
 libassuan-config
 libevdev-tweak-device
@@ -1630,6 +1660,7 @@ lzma
 lzmadec
 lzmainfo
 lzmore
+m4
 machinectl
 magick
 Magick++-config
@@ -2118,6 +2149,7 @@ paste
 pastebinit
 pasteurize
 pasuspender
+patch
 pathchk
 pax11publish
 pcap-config
@@ -2187,6 +2219,8 @@ pkcheck
 pkcs1-conv
 pk-example-frobnicate
 pkexec
+pkgconf
+pkg-config
 pkgdata
 pkgfile
 pki
@@ -2353,6 +2387,7 @@ qemu-keymap
 qemu-nbd
 qemu-pr-helper
 qemu-storage-daemon
+qemu-system-aarch64
 qemu-system-i386
 qemu-system-x86_64
 qlalr
@@ -2460,6 +2495,7 @@ rhash
 rifle
 rlogin
 rlogind
+rls
 rm
 rmdir
 rmmod
@@ -2501,6 +2537,13 @@ run-clang-tidy
 runcon
 run-parts
 runuser
+rustc
+rust-demangler
+rustdoc
+rustfmt
+rust-gdb
+rust-gdbgui
+rust-lldb
 rygel
 rygel-preferences
 sancov
@@ -2596,7 +2639,6 @@ skdump
 sktest
 slabtop
 sleep
-slirpvde
 sln
 sload.f2fs
 slsh
@@ -2712,11 +2754,13 @@ ssh-keygen
 ssh-keyscan
 ssltap
 sstpc
+st
 start-pulseaudio-x11
 start-statd
 startx
 stat
 stdbuf
+stest
 stoken
 stoken-gui
 stream
@@ -2949,7 +2993,6 @@ uniq
 unix_chkpwd
 unixcmd
 unix-lpr.sh
-unixterm
 unix_update
 unlink
 unlz4
@@ -3001,17 +3044,13 @@ v86d
 vde_autolink
 vdecmd
 vde_cryptcab
-vdekvm
-vde_l3
 vde_over_ns
 vde_pcapplug
 vde_plug
 vde_plug2tap
-vdeq
-vdeqemu
+vde_router
 vde_switch
 vdeterm
-vde_tunctl
 vdir
 vdpa
 vedit
@@ -3123,10 +3162,11 @@ x86_64
 x86_64-pc-linux-gnu-c++
 x86_64-pc-linux-gnu-g++
 x86_64-pc-linux-gnu-gcc
-x86_64-pc-linux-gnu-gcc-11.2.0
+x86_64-pc-linux-gnu-gcc-12.1.0
 x86_64-pc-linux-gnu-gcc-ar
 x86_64-pc-linux-gnu-gcc-nm
 x86_64-pc-linux-gnu-gcc-ranlib
+x86_64-pc-linux-gnu-pkg-config
 xargs
 xauth
 xclip
@@ -3227,6 +3267,7 @@ y4mtopnm
 y4mtoppm
 y4mtoyuv
 y4munsharp
+yacc
 yad
 yad-icon-browser
 yad-settings
@@ -3283,7 +3324,7 @@ zmore
 znew
 zramctl
 zsh
-zsh-5.8.1
+zsh-5.9
 zsoelim
 zstd
 zstdcat

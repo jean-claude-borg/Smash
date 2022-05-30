@@ -13,6 +13,7 @@
 
 //screenCleared is defined in commands.h as extern
 bool screenCleared;
+bool shouldExist;
 
 int main()
 {
@@ -22,7 +23,7 @@ int main()
     screenCleared = true;
     initShell();
     buildCommandIndex();
-    while(true)
+    while(!shouldExist)
     {
         // if screen is cleared, no new line is added
         if(!screenCleared && !userInputtedNothing)
@@ -66,11 +67,12 @@ int main()
         hasAmpersand = checkForAmpersand(list);
 
         //handles variable assigning and reassigning, if detectVarReassigns returns 1, then a variable was modified
-        if(detectVarReassigns(list) == 1)
-            continue;
         
         //runs commands by using separate processes
         executeCommands(list, hasPipeline, hasAmpersand);
+
+//        if(detectVarReassigns(list) == 1)
+//            continue;
         
         free(buffer);
         free(list);

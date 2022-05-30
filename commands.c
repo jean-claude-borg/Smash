@@ -16,21 +16,21 @@ char** shellVarName;
 char** shellVarValue;
 int shellVarListSize = 8;
 
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
-#define ANSI_COLOR_RESET_BOLD   "\x1b[22m"
-#define ANSI_COLOR_BOLD   "\x1b[1m"
-#define ANSI_COLOR_INVERSE   "\x1b[7m"
-#define ANSI_COLOR_RESET_INVERSE   "\x1b[27m"
-#define ANSI_COLOR_ITALIC   "\x1b[3m"
-#define ANSI_COLOR_UNDERLINE   "\x1b[4m"
-#define ANSI_COLOR_UNDERLINE_RESET   "\x1b[24m"
-#define ANSI_COLOR_ROOT_PATH   "\x1b[38;5;252m"
+#define ANSI_COLOR_RED     "\x1b[31m\0"
+#define ANSI_COLOR_GREEN   "\x1b[32m\0"
+#define ANSI_COLOR_YELLOW  "\x1b[33m\0"
+#define ANSI_COLOR_BLUE    "\x1b[34m\0"
+#define ANSI_COLOR_MAGENTA "\x1b[35m\0"
+#define ANSI_COLOR_CYAN    "\x1b[36m\0"
+#define ANSI_COLOR_RESET   "\x1b[0m\0"
+#define ANSI_COLOR_RESET_BOLD   "\x1b[22m\0"
+#define ANSI_COLOR_BOLD   "\x1b[1m\0"
+#define ANSI_COLOR_INVERSE   "\x1b[7m\0"
+#define ANSI_COLOR_RESET_INVERSE   "\x1b[27m\0"
+#define ANSI_COLOR_ITALIC   "\x1b[3m\0"
+#define ANSI_COLOR_UNDERLINE   "\x1b[4m\0"
+#define ANSI_COLOR_UNDERLINE_RESET   "\x1b[24m\0"
+#define ANSI_COLOR_ROOT_PATH   "\x1b[38;5;252m\0"
 
 #define HOST_NAME_MAX 20
 char* prompt;
@@ -62,25 +62,27 @@ void setPrompt()
     char* userName = getenv("USERNAME");
     char hostName[HOST_NAME_MAX];
     char* bold = ANSI_COLOR_BOLD;
-    char* reset = ANSI_COLOR_RESET_BOLD;
+    char* reset = ANSI_COLOR_RESET;
+    char* resetBold = ANSI_COLOR_RESET_BOLD;
     char* rootColour = ANSI_COLOR_ROOT_PATH;
     char* rootPath = getRootPath();
     gethostname(hostName, HOST_NAME_MAX);
     prompt = malloc(
-            strlen(ANSI_COLOR_BOLD)
-            + sizeof (char*)
+            strlen(bold)
+            + strlen ("[")
             + strlen(userName)
-            + sizeof("@")
-            + strlen(hostName)
+            + strlen("@")
+            + HOST_NAME_MAX
             + strlen(" ")
             + strlen(rootColour)
             + strlen(rootPath)
-            + strlen(ANSI_COLOR_RESET)
-            + strlen(ANSI_COLOR_BOLD)
+            + strlen(reset)
+            + strlen(bold)
             + sizeof ("]")
             + sizeof (": ")
-            + strlen(ANSI_COLOR_RESET));
-    //prompt[0] = 91; // 91 = ascii "["
+            + strlen(reset) + 1); //1 for null terminator
+
+    prompt[0] = 0; //strcat concatenates to a null terminator, so first character of prompt should be null terminator
     strcat(prompt, bold);
     strcat(prompt, "[");
     strcat(prompt,userName);
@@ -89,12 +91,13 @@ void setPrompt()
     strcat(prompt, " ");
     strcat(prompt, rootColour);
     strcat(prompt, rootPath);
-    strcat(prompt, ANSI_COLOR_RESET);
+    strcat(prompt, reset);
     strcat(prompt, bold);
     strcat(prompt,"]");
     strcat(prompt,"$ ");
-    strcat(prompt,reset);
+    strcat(prompt,resetBold);
     setenv("PROMPT", prompt, 1);
+    free(prompt);
 }
 
 void initShell()
@@ -173,11 +176,6 @@ int internalCd(char** args)
     //updates prompt
     setPrompt();
 
-    //runs internal cwd
-//    char* cwd = "cwd";
-//    char** cwdArg = &cwd;
-//    executeInternalCommands(cwdArg);
-
     //returns 1 on success
     return 1;
 }
@@ -195,7 +193,9 @@ int internalHelp(char** args)
 int internalExit(char** args)
 {
     //exits
-    exit(EXIT_SUCCESS);
+    //exit(EXIT_SUCCESS);
+    shouldExist = true;
+    return 0;
 }
 
 int internalCwd(char** args)
@@ -413,15 +413,15 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
     if (args[0] == NULL)
         return 1;
 
-    int j = 0;
-    while(args[++j] != NULL)
-    {
-        if(strcmp(args[j], "=") == 0)
-        {
-            reassignVar(args[j-1], args[j+1]);
-            return 1;
-        }
-    }
+//    int j = 0;
+//    while(args[++j] != NULL)
+//    {
+//        if(strcmp(args[j], "=") == 0)
+//        {
+//            reassignVar(args[j-1], args[j+1]);
+//            return 1;
+//        }
+//    }
     if(hasPipeline)
     {
         executeCommandsWithPipeline(args);
@@ -533,11 +533,12 @@ int executeCommandsWithPipeline(char**  args)
                 }
                 if(!internalCommandFound)
                 {
-                    //execlp(*args2, *args2, args2[1], (char *) NULL);
-                    int execResult = execvp(args2[0], args2);
+                    int execResult = execlp(*args2, *args2, args2[1], (char *) NULL);
+//                    int execResult = execvp(args2[0], args2);
                     if (execResult < 0) {
                         //fprintf(stderr, "Error executing command: command does not exist\n");
                         handleCommandNotFound(args2[0]);
+                        perror("hello nig");
                         exit(EXIT_FAILURE);
                     }
                 }

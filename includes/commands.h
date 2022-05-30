@@ -28,3 +28,4 @@ int executeCommandsWithAmpersand(char**  args);
 int executeInternalCommands(char** args);
 
 extern bool screenCleared;
+extern bool shouldExist;
