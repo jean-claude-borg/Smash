@@ -3,22 +3,23 @@
 #include <stdbool.h>
 #include <string.h>
 #include "parser.h"
+#include "alias.h"
 
-char* cleanInput(char* buffer)
+void nullTerminateAllTokens(char** tokenList)
 {
-//    int positionOfNewLine = 0;
-//    while(buffer[positionOfNewLine] != 10)
-//    {
-//        positionOfNewLine++;
-//    }
-//    buffer[positionOfNewLine] = 0;
-//    return buffer;
+    int tokenListCounter = 0;
+    char* token = tokenList[tokenListCounter];
+
+    while(token != NULL)
+    {
+        int tokenLength = (int)strlen(token);
+        token[tokenLength] = 0;
+        token = tokenList[tokenListCounter++];
+    }
 }
 
-char **parser(char *input2)
+char **parser(char *input)
 {
-    char* input = cleanInput(input2);
-
     int bufferSize = 64;
     int bufferIncrements = 64;
     int counter = 0;
@@ -48,13 +49,16 @@ char **parser(char *input2)
         }
         token = strtok(NULL, delimiter);
     }
-    //prints tokenList for debugging
-    for(int i = 0; i < 10; i++)
-    {
-        //printf("\n%s", tokenList[i]);
-    }
     printf("\n");
     tokenList[counter] = NULL;
+
+    tokenList = checkForAndReplaceAliases(tokenList);
+    nullTerminateAllTokens(tokenList);
+    //prints tokenList for debugging
+//    for(int i = 0; i < 7; i++)
+//    {
+//        printf("\n%s", tokenList[i]);
+//    }
     return tokenList;
 }
 

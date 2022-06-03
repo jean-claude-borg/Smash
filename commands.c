@@ -8,9 +8,11 @@
 #include "commands.h"
 #include "parser.h"
 #include "errorHandler.h"
+#include "alias.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "OCUnusedMacroInspection"
+
 extern char **environ;
 char** shellVarName;
 char** shellVarValue;
@@ -107,6 +109,7 @@ void initShell()
     printf ("\e]2;Smash-1.2\a");
     //init shell variables
     initShellVariables();
+    createAliases();
 }
 
 void initShellVariables()
@@ -500,7 +503,7 @@ int executeCommandsWithPipeline(char**  args)
             }
             if(!internalCommandFound)
             {
-                //execlp(*args1, *args1, args1[1], (char*) NULL);
+//                int execResult = execlp(*args1, *args1, args1[1], (char*) NULL);
                 int execResult = execvp(args1[0], args1);
                 if (execResult < 0) {
                     //fprintf(stderr, "Error executing command: command does not exist\n");
@@ -533,12 +536,12 @@ int executeCommandsWithPipeline(char**  args)
                 }
                 if(!internalCommandFound)
                 {
-                    int execResult = execlp(*args2, *args2, args2[1], (char *) NULL);
-//                    int execResult = execvp(args2[0], args2);
+//                    int execResult = execlp(*args2, *args2, args2[1], (char *) NULL);
+                    int execResult = execvp(args2[0], args2);
                     if (execResult < 0) {
                         //fprintf(stderr, "Error executing command: command does not exist\n");
                         handleCommandNotFound(args2[0]);
-                        perror("hello nig");
+                        perror("error: ");
                         exit(EXIT_FAILURE);
                     }
                 }

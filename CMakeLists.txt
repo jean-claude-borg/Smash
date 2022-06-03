@@ -5,7 +5,7 @@ set(CMAKE_C_STANDARD 11)
 include_directories(includes)
 
 #source files excluding main.c
-set(SOURCES parser.c commands.c linenoise.c input.c includes/input.h errorHandler.c includes/errorHandler.h)
+set(SOURCES parser.c commands.c linenoise.c input.c includes/input.h errorHandler.c includes/errorHandler.h alias.c includes/alias.h list.c includes/list.h)
 
 #executable name = Smash
 add_executable(Smash main.c ${SOURCES})
