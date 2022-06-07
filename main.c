@@ -13,7 +13,7 @@
 
 //screenCleared is defined in commands.h as extern
 bool screenCleared;
-bool shouldExist;
+bool shouldExit;
 
 int main()
 {
@@ -23,7 +23,7 @@ int main()
     screenCleared = true;
     initShell();
     buildCommandIndex();
-    while(!shouldExist)
+    while(!shouldExit)
     {
         // if screen is cleared, no new line is added
         if(!screenCleared && !userInputtedNothing)

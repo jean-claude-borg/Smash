@@ -40,6 +40,32 @@ void createAliases()
     strcpy(aliasValues[3], "fgrep --colour=auto");
 }
 
+int getNumberOfAliases()
+{
+    return numberOfAliases;
+}
+
+void printAliases()
+{
+    for(int i = 0; i < getNumberOfAliases(); i++)
+    {
+        fprintf(stdout, "%5s = %s\n",aliasNames[i], aliasValues[i]);
+    }
+}
+
+void createNewAlias(char* aliasName, char* aliasValue)
+{
+    numberOfAliases++;
+    aliasNames = realloc(aliasNames, sizeof (char*) * numberOfAliases);
+    aliasValues = realloc(aliasValues, sizeof (char*) * numberOfAliases);
+
+    aliasNames[numberOfAliases-1] = malloc(sizeof (char) * strlen(aliasName));
+    aliasValues[numberOfAliases-1] = malloc(sizeof (char) * strlen(aliasValue));
+
+    strcpy(aliasNames[numberOfAliases-1], aliasName);
+    strcpy(aliasValues[numberOfAliases-1], aliasValue);
+}
+
 char** createNewTokenlistWithAliasValues(char** tokenList, int aliasCounter, int listPos)
 {
     //get number of tokens in tokenList
@@ -79,13 +105,13 @@ char** createNewTokenlistWithAliasValues(char** tokenList, int aliasCounter, int
     }
 
     //copy tokenLinkedList to supplied tokenList
-    char** newTokenList = malloc(sizeof (char*) * getListLength(tokenLinkedList));
-    for(int i = 0; i < getListLength(tokenLinkedList); i++)
+    char** newTokenList = malloc(sizeof (char*) * getListLength(aliasTokenLinkedList));
+    for(int i = 0; i < getListLength(aliasTokenLinkedList); i++)
     {
-        newTokenList[i] = malloc(sizeof (char) * strlen(getDataFromListIndex(tokenLinkedList, i)));
-        strcpy(newTokenList[i], getDataFromListIndex(tokenLinkedList, i));
+        newTokenList[i] = malloc(sizeof (char) * strlen(getDataFromListIndex(aliasTokenLinkedList, i)));
+        strcpy(newTokenList[i], getDataFromListIndex(aliasTokenLinkedList, i));
     }
-    newTokenList[getListLength(tokenLinkedList)] = NULL;
+    newTokenList[getListLength(aliasTokenLinkedList)] = NULL;
 
     deleteList(aliasTokenLinkedList, &aliasTokenLinkedList);
     deleteList(tokenLinkedList, &tokenLinkedList);
@@ -110,3 +136,4 @@ char** checkForAndReplaceAliases(char** tokenList)
     }
     return tokenList;
 }
+

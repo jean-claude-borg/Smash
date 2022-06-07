@@ -18,6 +18,7 @@ int internalShowenv(char** args);
 int internalExport(char** args);
 int internalUnset(char** args);
 int getSource(char* filePath);
+int internalAlias(char** args);
 
 int countInternals();
 
@@ -28,4 +29,4 @@ int executeCommandsWithAmpersand(char**  args);
 int executeInternalCommands(char** args);
 
 extern bool screenCleared;
-extern bool shouldExist;
+extern bool shouldExit;

@@ -414,6 +414,7 @@ cryptsetup
 cryptsetup-reencrypt
 csepdjvu
 csplit
+ctags.emacs
 ctest
 ctrlaltdel
 ctstat
@@ -579,6 +580,7 @@ dvcont
 dvipdf
 dwebp
 dwm
+dwm
 dwp
 dynamic-wallpaper-editor
 e2freefrag
@@ -592,6 +594,7 @@ e2undo
 e4crypt
 e4defrag
 eapol_test
+ebrowse
 ebtables-nft
 ebtables-nft-restore
 ebtables-nft-save
@@ -629,6 +632,9 @@ elf2dmp
 elfedit
 elif
 else
+emacs
+emacs-28.1
+emacsclient
 enable
 enc265
 enc2xs
@@ -649,6 +655,7 @@ era_restore
 esac
 escapesrc
 escputil
+etags
 eval
 event_rpcgen.py
 evince
@@ -1468,6 +1475,7 @@ libgtop_server2
 libieee1284_test
 libinput
 libnetcfg
+libotf-config
 libpng16-config
 libpng-config
 libtool
@@ -1669,6 +1677,12 @@ lzma
 lzmadec
 lzmainfo
 lzmore
+m17n-conv
+m17n-date
+m17n-db
+m17n-dump
+m17n-edit
+m17n-view
 m4
 machinectl
 magick
@@ -2109,6 +2123,10 @@ osinfo-install-script
 osinfo-query
 os-prober
 ostree
+otfdump
+otflist
+otftobdf
+otfview
 out123
 outdated-checker
 ownership

@@ -349,3 +349,13 @@ char* getDataFromListIndex(node* head, int index)
     }
     return currentNode->data;
 }
+
+void replaceDataAtIndex(node* head, int index, char* newData)
+{
+    node* currentNode = head;
+    for(int i = 0; i < index; i++)
+    {
+        currentNode=currentNode->nextNode;
+    }
+    strcpy(currentNode->data, newData);
+}

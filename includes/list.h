@@ -36,3 +36,5 @@ void popFromListAt(node* head, int index);
 void mergeLists(node* head1, node* head2);
 
 char* getDataFromListIndex(node* head, int index);
+
+void replaceDataAtIndex(node* head, int index, char* newData);

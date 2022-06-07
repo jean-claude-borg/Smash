@@ -74,7 +74,7 @@ void setPrompt()
             + strlen ("[")
             + strlen(userName)
             + strlen("@")
-            + HOST_NAME_MAX
+            + HOST_NAME_MAX     //TODO possible memory leak
             + strlen(" ")
             + strlen(rootColour)
             + strlen(rootPath)
@@ -109,6 +109,12 @@ void initShell()
     printf ("\e]2;Smash-1.2\a");
     //init shell variables
     initShellVariables();
+    char** path = malloc(sizeof (char*) * 2);
+    path[0] = malloc(sizeof (char) * strlen("cd"));
+    path[0] = "cd";
+    path[1] = malloc(sizeof (char) * strlen(getenv("HOME")));
+    path[1] = getenv("HOME");
+    internalCd(path);
     createAliases();
 }
 
@@ -135,7 +141,7 @@ void initShellVariables()
     shellVarValue[7] = "";
 }
 
-char* commandList[] = {"cd", "exit", "help", "cwd", "clear", "echo", "showvar", "showenv", "export", "unset"};
+char* commandList[] = {"cd", "exit", "help", "cwd", "clear", "echo", "showvar", "showenv", "export", "unset", "alias"};
 
 int (*internals[])(char **) = 
 {
@@ -148,7 +154,8 @@ int (*internals[])(char **) =
     &internalShowvar,
     &internalShowenv,
     &internalExport,
-    &internalUnset
+    &internalUnset,
+    &internalAlias
 };
 
 void processCommandsFromFile(char* buffer)
@@ -197,7 +204,7 @@ int internalExit(char** args)
 {
     //exits
     //exit(EXIT_SUCCESS);
-    shouldExist = true;
+    shouldExit = true;
     return 0;
 }
 
@@ -283,6 +290,21 @@ int internalUnset(char** args)
 
     unsetenv(args[1]);
     return 1;
+}
+
+int internalAlias(char** args)
+{
+    if(args[1] == NULL) {
+        printAliases();
+        return 0;
+    }
+
+    if(strcmp(args[1], "-n") == 0)
+    {
+        char* aliasName = args[2];
+        char* aliasValue = args[3];
+        createNewAlias(aliasName, aliasValue);
+    }
 }
 
 int getSource(char* filePath)
@@ -459,18 +481,21 @@ int executeCommandsWithPipeline(char**  args)
 
         //execvp(args[0], totalCommandsBeforePipeline-1);
 
-        char**args1 = malloc(sizeof(char*) * totalCommandsBeforePipeline);
-        char**args2 = malloc(sizeof(char*) * totalCommandsAfterPipeline);
+        char**args1 = malloc(sizeof(char*) * totalCommandsBeforePipeline + sizeof (char*));
+        char**args2 = malloc(sizeof(char*) * totalCommandsAfterPipeline + sizeof (char*));
 
         //splits list into 2, one list for before pipeline, one for after
         for(int i = 0; i < totalCommandsBeforePipeline; i++)
         {
             args1[i] = args[i];
             //adds a null character after the last command in args1, so that execlp works properly
-            if(i == totalCommandsBeforePipeline-1){args1[i+1] = NULL;}
+            if(i == totalCommandsBeforePipeline-1){args1[i+1] = (char*) NULL;}
         }
         for(int i = 1; i <= totalCommandsAfterPipeline; i++)
-            args2[i-1] = args[totalCommandsBeforePipeline+i];
+        {
+            args2[i - 1] = args[totalCommandsBeforePipeline + i];
+            if(i == totalCommandsAfterPipeline-1){args2[i+1] = (char*) NULL;}
+        }
 
         //use built in linux pipes
         pid_t pid;
@@ -503,8 +528,8 @@ int executeCommandsWithPipeline(char**  args)
             }
             if(!internalCommandFound)
             {
-//                int execResult = execlp(*args1, *args1, args1[1], (char*) NULL);
-                int execResult = execvp(args1[0], args1);
+                int execResult = execlp(*args1, *args1, args1[0], NULL);
+//                int execResult = execvp(args1[0], args1);
                 if (execResult < 0) {
                     //fprintf(stderr, "Error executing command: command does not exist\n");
                     handleCommandNotFound(args1[0]);
