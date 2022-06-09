@@ -3,22 +3,49 @@
 #include <stdbool.h>
 #include <string.h>
 #include <unistd.h> 
-#include "input.h"
 #include "parser.h"
 #include "commands.h"
 #include "linenoise.h"
+#include "input.h"
+#include "errorHandler.h"
+#include<readline/readline.h>
+#include<readline/history.h>
+
+//screenCleared is defined in commands.h as extern
+bool screenCleared;
+bool shouldExit;
 
 int main()
-{   
-    initShellVariables();
-    while(true)
+{
+    bool userInputtedNothing = false;
+
+    system("clear");
+    screenCleared = true;
+    initShell();
+    buildCommandIndex();
+    while(!shouldExit)
     {
-        //prompt user and store input
-        fprintf(stdout, "\n");
-        char* buffer = linenoise(getenv("PROMPT"));
+        // if screen is cleared, no new line is added
+        if(!screenCleared && !userInputtedNothing)
+            fprintf(stdout,"\n");
+        else
+        {
+            screenCleared = false;
+            userInputtedNothing = false;
+        }
+
+        char* buffer = getUserInput();
+        //if user inputs nothing, skip parsing of commands
+        if(buffer == NULL || buffer[0] == 10 || buffer[0] == 0)
+        {
+            userInputtedNothing = true;
+            continue;
+        }
+
         //allows the up and down arrow keys to be used to access preious commands
-        linenoiseHistoryAdd(buffer);
-        
+        using_history();
+        add_history(buffer);
+
         //parse input
         char **list = parser(buffer);
 
@@ -33,17 +60,22 @@ int main()
         varExpansion(list);
         //unparses and rejoins any tokens which were within quotes
         undoQuotes(list);
+        //checks for pipeline character
+        bool hasPipeline = false;
+        bool hasAmpersand = false;
+        hasPipeline = checkForPipeline(list);
+        hasAmpersand = checkForAmpersand(list);
 
         //handles variable assigning and reassigning, if detectVarReassigns returns 1, then a variable was modified
-        if(detectVarReassigns(list) == 1)
-            continue;
         
-        //runs commands by using seperate processes
-        executeCommands(list);
+        //runs commands by using separate processes
+        executeCommands(list, hasPipeline, hasAmpersand);
+
+//        if(detectVarReassigns(list) == 1)
+//            continue;
         
         free(buffer);
         free(list);
     }
-
     return 0;
 } 

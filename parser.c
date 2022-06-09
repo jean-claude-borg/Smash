@@ -3,6 +3,20 @@
 #include <stdbool.h>
 #include <string.h>
 #include "parser.h"
+#include "alias.h"
+
+void nullTerminateAllTokens(char** tokenList)
+{
+    int tokenListCounter = 0;
+    char* token = tokenList[tokenListCounter];
+
+    while(token != NULL)
+    {
+        int tokenLength = (int)strlen(token);
+        token[tokenLength] = 0;
+        token = tokenList[tokenListCounter++];
+    }
+}
 
 char **parser(char *input)
 {
@@ -27,15 +41,24 @@ char **parser(char *input)
         tokenList[counter] = token;
         counter++;
 
-        //dynamicallky allocates more memory if the input is larger than the buffer
+        //dynamically allocates more memory if the input is larger than the buffer
         if(counter >= bufferSize)
         {
             bufferSize += bufferIncrements;
             tokenList = realloc(tokenList, bufferSize * sizeof(char*));
         }
         token = strtok(NULL, delimiter);
-    }    
+    }
+    printf("\n");
     tokenList[counter] = NULL;
+
+    tokenList = checkForAndReplaceAliases(tokenList);
+    nullTerminateAllTokens(tokenList);
+    //prints tokenList for debugging
+//    for(int i = 0; i < 3; i++)
+//    {
+//        printf("\n%s", tokenList[i]);
+//    }
     return tokenList;
 }
 
@@ -66,19 +89,30 @@ char **undoQuotes(char** tokenList)
     removeQuotes(tokenList);
 
     //concatenates all the strings in quotes to the first string in the quotes
-    int i = 0;
-    if(secondQuote - firstQuote > 1)
-    {    
-        while(secondQuote - i > firstQuote)
-        {
-            strncat(tokenList[secondQuote - i - 1], tokenList[secondQuote-i], strlen(tokenList[secondQuote-i]));
-            i++;
+    //int i = 0;
+//    if(secondQuote - firstQuote > 1)
+//    {
+//        while(secondQuote - i > firstQuote)
+//        {
+//            strcat(tokenList[secondQuote - i], "_");
+//            strncat(tokenList[secondQuote - i - 1], tokenList[secondQuote-i], strlen(tokenList[secondQuote-i]));
+//            i++;
+//        }
+//
+//        //clears the rest of the tokenlist of the redundant strings
+//        for(int counter = 1; counter <= i; counter++)
+//            tokenList[firstQuote+counter] = NULL;
+//
+//    }
+    if(secondQuote - firstQuote > 0)
+    {
+        int i;
+        for (i = 1; firstQuote + i <= secondQuote; i++) {
+            strcat(tokenList[firstQuote], " ");
+            strncat(tokenList[firstQuote], tokenList[firstQuote + i], strlen(tokenList[firstQuote+i]));
         }
-
-        //clears the rest of the tokenlist of the redundant strings
-        for(int counter = 1; counter <= i; counter++)
-            tokenList[firstQuote+counter] = NULL;
-
+        for (int counter = 1; counter <= i; counter++)
+            tokenList[firstQuote + counter] = NULL;
     }
 }
 
@@ -106,4 +140,34 @@ char **removeQuotes(char** tokenList)
             }
         }
     }
+}
+
+bool checkForPipeline(char** tokenList)
+{
+    int listSize = 0;
+    //calculating amount of tokens in list
+    while(tokenList[listSize] != NULL)
+        listSize++;
+
+    for(int i = 0; i < listSize; i++)
+    {
+        if(strcmp(tokenList[i], "|") == 0)
+            return true;
+    }
+    return false;
+}
+
+bool checkForAmpersand(char** tokenList)
+{
+    int listSize = 0;
+    //calculating amount of tokens in list
+    while(tokenList[listSize] != NULL)
+        listSize++;
+
+    for(int i = 0; i < listSize; i++)
+    {
+        if(strcmp(tokenList[i], "&&") == 0)
+            return true;
+    }
+    return false;
 }

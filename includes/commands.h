@@ -1,5 +1,6 @@
 #pragma once
 
+void initShell();
 void initShellVariables();
 int varExpansion(char** tokenList);
 int reassignVar(char* var, char* newValue);
@@ -17,8 +18,15 @@ int internalShowenv(char** args);
 int internalExport(char** args);
 int internalUnset(char** args);
 int getSource(char* filePath);
+int internalAlias(char** args);
 
 int countInternals();
 
 int startProcesses(char **args);
-int executeCommands(char **args);
+int executeCommands(char **args, bool hasPipeLine, bool hasAmpersand);
+int executeCommandsWithPipeline(char** args);
+int executeCommandsWithAmpersand(char**  args);
+int executeInternalCommands(char** args);
+
+extern bool screenCleared;
+extern bool shouldExit;
