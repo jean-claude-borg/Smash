@@ -298,12 +298,23 @@ int internalAlias(char** args)
         printAliases();
         return 0;
     }
+    //TODO CHECK THAT ARGS 2 AND 3 ARE NOT NULL
 
+    //aliasNames cannot have spaces in them
     if(strcmp(args[1], "-n") == 0)
     {
+        if(args[2] == NULL || args[3] == NULL)
+        {
+            return 1;
+        }
         char* aliasName = args[2];
         char* aliasValue = args[3];
         createNewAlias(aliasName, aliasValue);
+    }
+    else if(strcmp(args[1], "-r") == 0)
+    {
+        char* aliasName = args[2];
+        removeAlias(aliasName);
     }
 }
 
@@ -528,8 +539,8 @@ int executeCommandsWithPipeline(char**  args)
             }
             if(!internalCommandFound)
             {
-                int execResult = execlp(*args1, *args1, args1[0], NULL);
-//                int execResult = execvp(args1[0], args1);
+//                int execResult = execlp(*args1, *args1, args1[0], NULL);
+                int execResult = execvp(args1[0], args1);
                 if (execResult < 0) {
                     //fprintf(stderr, "Error executing command: command does not exist\n");
                     handleCommandNotFound(args1[0]);

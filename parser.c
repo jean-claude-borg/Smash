@@ -55,7 +55,7 @@ char **parser(char *input)
     tokenList = checkForAndReplaceAliases(tokenList);
     nullTerminateAllTokens(tokenList);
     //prints tokenList for debugging
-//    for(int i = 0; i < 5; i++)
+//    for(int i = 0; i < 3; i++)
 //    {
 //        printf("\n%s", tokenList[i]);
 //    }

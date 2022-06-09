@@ -98,6 +98,7 @@ arch-meson
 arecord
 arecordmidi
 argon2
+arp
 arpd
 arping
 arptables-nft
@@ -1259,6 +1260,7 @@ idn
 idn2
 iecset
 if
+ifconfig
 ifnames
 ifstat
 ijs_client_example
@@ -1310,6 +1312,7 @@ ipcmk
 ipcrm
 ipcs
 ipf-mod.pl
+ipmaddr
 ippeveprinter
 ippfind
 ipptool
@@ -1329,6 +1332,7 @@ iptables-save
 iptables-translate
 iptables-xml
 iptc
+iptunnel
 ir-ctl
 ir-keytable
 irqtop
@@ -1808,6 +1812,7 @@ mib2c
 mib2c-update
 migratepages
 migspeed
+mii-tool
 minfo
 mjpeg_simd_helper
 mk_cmds
@@ -1952,6 +1957,7 @@ mv
 mxtar
 mzip
 namei
+nameif
 nano
 nasm
 natpmpc
@@ -1970,6 +1976,7 @@ netcap
 net-snmp-cert
 net-snmp-config
 net-snmp-create-v3-user
+netstat
 nettle-hash
 nettle-lfib-stream
 nettle-pbkdf2
@@ -2097,6 +2104,18 @@ numademo
 numastat
 numfmt
 numlockx
+nvidia-bug-report.sh
+nvidia-cuda-mps-control
+nvidia-cuda-mps-server
+nvidia-debugdump
+nvidia-modprobe
+nvidia-ngx-updater
+nvidia-persistenced
+nvidia-powerd
+nvidia-settings
+nvidia-sleep.sh
+nvidia-smi
+nvidia-xconfig
 obj2yaml
 objcopy
 objdump
@@ -2257,6 +2276,7 @@ pkill
 pkttyagent
 pl2pm
 pldd
+plipconfig
 plistutil
 plog
 plugctl
@@ -2474,6 +2494,7 @@ ranger
 rankmirrors
 ranlib
 rapper
+rarp
 rarpd
 rav1e
 raw2tiff
@@ -2545,6 +2566,7 @@ roff2text
 roff2x
 rofiles-fuse
 rotatelogs
+route
 routel
 rpcbind
 rpcclient
@@ -2581,6 +2603,8 @@ rustfmt
 rust-gdb
 rust-gdbgui
 rust-lldb
+rview
+rvim
 rygel
 rygel-preferences
 sancov
@@ -2675,6 +2699,7 @@ size
 skdump
 sktest
 slabtop
+slattach
 sleep
 sln
 sload.f2fs
@@ -3124,6 +3149,9 @@ vgsplit
 vi
 view
 vigr
+vim
+vimdiff
+vimtutor
 vipw
 virgl_test_server
 virsh
@@ -3283,6 +3311,7 @@ xtables-nft-multi
 xtotroff
 xtrace
 Xwayland
+xxd
 xxh128sum
 xxh32sum
 xxh64sum

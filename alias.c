@@ -66,6 +66,26 @@ void createNewAlias(char* aliasName, char* aliasValue)
     strcpy(aliasValues[numberOfAliases-1], aliasValue);
 }
 
+void removeAlias(char* aliasName)
+{
+    for(int i = 0; i < numberOfAliases; i++)
+    {
+        if(strcmp(aliasNames[i], aliasName) == 0)
+        {
+            int numberOfAliasesLeft = numberOfAliases - 1 - i;
+            for(int j = 0; j < numberOfAliasesLeft; j++)
+            {
+                strcpy(aliasNames[i+j], aliasNames[i+j+1]);
+                strcpy(aliasValues[i+j], aliasValues[i+j+1]);
+            }
+            free(aliasNames[numberOfAliases - 1]);
+            free(aliasValues[numberOfAliases - 1]);
+            numberOfAliases--;
+            break;
+        }
+    }
+}
+
 char** createNewTokenlistWithAliasValues(char** tokenList, int aliasCounter, int listPos)
 {
     //get number of tokens in tokenList
@@ -97,21 +117,28 @@ char** createNewTokenlistWithAliasValues(char** tokenList, int aliasCounter, int
 
     //have tokenLinkedList and aliasTokenLinkedList,
     //add aliases to correct index of tokenLinkedList
-
-    for(int i = 1; i < getListLength(aliasTokenLinkedList); i++)
-    {
-        char* data = getDataFromListIndex(aliasTokenLinkedList, i);
-        pushToListAt(tokenLinkedList, data, listPos + i);
-    }
-
-    //copy tokenLinkedList to supplied tokenList
-    char** newTokenList = malloc(sizeof (char*) * getListLength(aliasTokenLinkedList));
     for(int i = 0; i < getListLength(aliasTokenLinkedList); i++)
     {
-        newTokenList[i] = malloc(sizeof (char) * strlen(getDataFromListIndex(aliasTokenLinkedList, i)));
-        strcpy(newTokenList[i], getDataFromListIndex(aliasTokenLinkedList, i));
+        char* aliasData = getDataFromListIndex(aliasTokenLinkedList, i);
+        char* tokenData = getDataFromListIndex(tokenLinkedList, listPos);
+
+        //replaces aliasName with first aliasValue
+        if(i == 0)
+        {
+            replaceDataAtIndex(tokenLinkedList, listPos, aliasData);
+        }
+        else
+            pushToListAt(tokenLinkedList, aliasData, listPos + i);
     }
-    newTokenList[getListLength(aliasTokenLinkedList)] = NULL;
+
+    //copy tokenLinkedList to char** array
+    char** newTokenList = malloc(sizeof (char*) * getListLength(tokenLinkedList));
+    for(int i = 0; i < getListLength(tokenLinkedList); i++)
+    {
+        newTokenList[i] = malloc(sizeof (char) * strlen(getDataFromListIndex(tokenLinkedList, i)));
+        strcpy(newTokenList[i], getDataFromListIndex(tokenLinkedList, i));
+    }
+    newTokenList[getListLength(tokenLinkedList)] = NULL;
 
     deleteList(aliasTokenLinkedList, &aliasTokenLinkedList);
     deleteList(tokenLinkedList, &tokenLinkedList);
