@@ -52,7 +52,7 @@ char **parser(char *input)
     printf("\n");
     tokenList[counter] = NULL;
 
-    tokenList = checkForAndReplaceAliases(tokenList);
+//    tokenList = checkForAndReplaceAliases(tokenList);
     nullTerminateAllTokens(tokenList);
     //prints tokenList for debugging
 //    for(int i = 0; i < 3; i++)

@@ -8,6 +8,7 @@
 #include "linenoise.h"
 #include "input.h"
 #include "errorHandler.h"
+#include "alias.h"
 #include<readline/readline.h>
 #include<readline/history.h>
 
@@ -55,6 +56,13 @@ int main()
             getSource(list[1]);
             continue;
         }
+
+        //check for and reassigns shell variables in first token of list only
+        if(detectVarReassigns(list) == 1)
+            continue;
+
+        list = checkForAndReplaceAliases(list);
+        nullTerminateAllTokens(list);
 
         //expands any variables which are preceded by a $ sign
         varExpansion(list);

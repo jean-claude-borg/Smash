@@ -15,7 +15,7 @@ void createAliases()
     aliasValues = malloc(sizeof (char*) * numberOfAliases);
 
     aliasNames[0] = malloc(sizeof (char) * strlen("ls"));
-    aliasValues[0] = malloc(sizeof (char) * strlen("ls --color=auto"));
+    aliasValues[0] = malloc(sizeof (char) * strlen("ls --color=auto -l"));
 
     aliasNames[1] = malloc(sizeof (char) * strlen("grep"));
     aliasValues[1] = malloc(sizeof (char) * strlen("grep --colour=auto"));
@@ -28,7 +28,7 @@ void createAliases()
 
     //string literals can not be tokenised by strtok as they are stored in read only memory
     strcpy(aliasNames[0], "ls");
-    strcpy(aliasValues[0], "ls --color=auto");
+    strcpy(aliasValues[0], "ls --color=auto -l");
 
     strcpy(aliasNames[1], "grep");
     strcpy(aliasValues[1], "grep --colour=auto");
@@ -45,11 +45,21 @@ int getNumberOfAliases()
     return numberOfAliases;
 }
 
+void printAliasHelp()
+{
+    fprintf(stdout, "alias: inbuilt command, usage: alias [options] [args]\n");
+    fprintf(stdout, "aliasName refers to the word to be replaced (example: ls)\n");
+    fprintf(stdout, "aliasValue refers to the words replacing original word (example: ls --color=auto)\n");
+    fprintf(stdout, "options: '-n' \t create new alias, usage: alias -n [aliasName] [aliasValue]\n");
+    fprintf(stdout, "options: '-r' \t delete an alias, usage: alias -r \"[aliasValue]\"\n");
+    fprintf(stdout, "options: '-h' \t prints this help message, usage: alias -h\n");
+}
+
 void printAliases()
 {
     for(int i = 0; i < getNumberOfAliases(); i++)
     {
-        fprintf(stdout, "%5s = %s\n",aliasNames[i], aliasValues[i]);
+        fprintf(stdout, "%5s = '%s'\n",aliasNames[i], aliasValues[i]);
     }
 }
 
@@ -66,11 +76,11 @@ void createNewAlias(char* aliasName, char* aliasValue)
     strcpy(aliasValues[numberOfAliases-1], aliasValue);
 }
 
-void removeAlias(char* aliasName)
+void removeAlias(char* aliasValue)
 {
     for(int i = 0; i < numberOfAliases; i++)
     {
-        if(strcmp(aliasNames[i], aliasName) == 0)
+        if(strcmp(aliasValues[i], aliasValue) == 0)
         {
             int numberOfAliasesLeft = numberOfAliases - 1 - i;
             for(int j = 0; j < numberOfAliasesLeft; j++)

@@ -99,16 +99,20 @@ void setPrompt()
     strcat(prompt,"$ ");
     strcat(prompt,resetBold);
     setenv("PROMPT", prompt, 1);
-    free(prompt);
+
+    free(shellVarValue[1]);
+    shellVarValue[1] = malloc(sizeof (char) * strlen(prompt));
+    shellVarValue[1] = prompt;
+  //  free(prompt);
 }
 
 void initShell()
 {
+    initShellVariables();
     setPrompt();
     //set gnome-terminal window title
     printf ("\e]2;Smash-1.2\a");
     //init shell variables
-    initShellVariables();
     char** path = malloc(sizeof (char*) * 2);
     path[0] = malloc(sizeof (char) * strlen("cd"));
     path[0] = "cd";
@@ -132,7 +136,8 @@ void initShellVariables()
     
     shellVarValue = malloc(sizeof(char*) * shellVarListSize);
     shellVarValue[0] = getenv("PATH");
-    shellVarValue[1] = prompt;
+ //   shellVarValue[1] is set when prompt is changed in setPrompt()
+ //   shellVarValue[1] = prompt;
     shellVarValue[2] = getenv("PWD");
     shellVarValue[3] = getenv("USER");
     shellVarValue[4] = getenv("HOME");
@@ -162,7 +167,16 @@ void processCommandsFromFile(char* buffer)
 {
     char **list = parser(buffer);
 
-    if(detectVarReassigns(list) == 1)return;
+    //check for hashtag and doesnt execute if first character is a hashtag(comment support)
+    if(list[0] == NULL ||  list[0][0] == 35) //35 = ASCII hashtag
+        return;
+
+    if(detectVarReassigns(list) == 1)
+        return;
+
+    list = checkForAndReplaceAliases(list);
+    nullTerminateAllTokens(list);
+
     varExpansion(list);
     undoQuotes(list);
     bool hasPipeline = false;
@@ -171,6 +185,7 @@ void processCommandsFromFile(char* buffer)
     hasAmpersand = checkForAmpersand(list);
 
     executeCommands(list, hasPipeline, hasAmpersand);
+    free(list);
 }
 
 int countInternals() 
@@ -218,7 +233,6 @@ int internalCwd(char** args)
 
 int internalClear(char** args)
 {
-    //fprintf(stdout, " ");
     system("clear");
     screenCleared = true;
     return 1;
@@ -227,9 +241,9 @@ int internalClear(char** args)
 int internalEcho(char** args)
 {
     for(int i = 1; args[i] != NULL; i++) {
-        fprintf(stdout, "%s\n ", args[i]);
+        fprintf(stdout, "%s ", args[i]);
     }
-
+    fprintf(stdout, "\n");
     return 1;
 }
 
@@ -303,8 +317,9 @@ int internalAlias(char** args)
     //aliasNames cannot have spaces in them
     if(strcmp(args[1], "-n") == 0)
     {
-        if(args[2] == NULL || args[3] == NULL)
+        if(args[2] == NULL || args[3] == NULL || args[4] != NULL)
         {
+            printAliasHelp();
             return 1;
         }
         char* aliasName = args[2];
@@ -313,8 +328,17 @@ int internalAlias(char** args)
     }
     else if(strcmp(args[1], "-r") == 0)
     {
+        if(args[2] == NULL || args[3] != NULL)
+        {
+            printAliasHelp();
+            return 1;
+        }
         char* aliasName = args[2];
         removeAlias(aliasName);
+    }
+    else if(strcmp(args[1], "-h") == 0)
+    {
+        printAliasHelp();
     }
 }
 
@@ -336,7 +360,7 @@ int getSource(char* filePath)
                 processCommandsFromFile(line);
             }
             fclose(file);
-            return 1;
+            return 0;
         }
 }
 
@@ -395,9 +419,10 @@ int reassignVar(char* var, char* newValue)
         shellVarValue = realloc(shellVarValue, (sizeof(char*) * shellVarListSize) + sizeof(char*));
         shellVarListSize++;
 
-        shellVarName[shellVarListSize-1] = var;
-        shellVarValue[shellVarListSize-1] = newValue;
-
+        shellVarName[shellVarListSize-1] = malloc(sizeof (char) * strlen(var));
+        shellVarValue[shellVarListSize-1] = malloc(sizeof (char) * strlen(newValue));
+        strcpy(shellVarName[shellVarListSize-1], var);
+        strcpy(shellVarValue[shellVarListSize-1], newValue);
         //fprintf(stdout, "%s = %s\n", var, newValue);
     }
     
@@ -411,7 +436,8 @@ int detectVarReassigns(char** tokenList)
     while(tokenList[listSize] != NULL)
         listSize++;
 
-    for(int i = 0; i < listSize; i++)
+    //only checks for = sign in first token
+    for(int i = 0; i < 1; i++)
     {
         for(int j = 0; j < strlen(tokenList[i]); j++)
         {
@@ -432,6 +458,8 @@ int detectVarReassigns(char** tokenList)
                     if(returnValue != NULL)
                         newValue = returnValue;
                 }
+//                printf("\n%s",varName);
+//                printf("\t%s\n",newValue);
                 reassignVar(varName, newValue);
 
                 //returns 1 if an = was detected and a shell variable was changed
@@ -452,21 +480,28 @@ int executeCommands(char **args, bool hasPipeline, bool hasAmpersand)
 //    int j = 0;
 //    while(args[++j] != NULL)
 //    {
+////        printf("\nabc12345\n");
 //        if(strcmp(args[j], "=") == 0)
 //        {
 //            reassignVar(args[j-1], args[j+1]);
 //            return 1;
 //        }
 //    }
+//    if(strcmp(args[1], "=") == 0)
+//    {
+//        reassignVar(args[0], args[2]);
+//        return 0;
+//    }
+
     if(hasPipeline)
     {
         executeCommandsWithPipeline(args);
-        return 1;
+        return 0;
     }
     else if(hasAmpersand)
     {
         executeCommandsWithAmpersand(args);
-        return 1;
+        return 0;
     }
     else { executeInternalCommands(args); }
     return 1;
@@ -700,11 +735,18 @@ int executeCommandsWithAmpersand(char**  args)
 }
 
 int executeInternalCommands(char** args) {    //executes internal commands
+
+//    if(strcmp(args[1], "=") == 0)
+//    {
+//        reassignVar(args[0], args[2]);
+//        return 0;
+//    }
+
         for (int i = 0; i < countInternals(); i++) {
             if (strcmp(args[0], commandList[i]) == 0)
                 return (*internals[i])(args);
         }
-        //if command is not an internal command, treats it as a bash command
+        //if command is not an internal command, treats it as a linux command
         return startProcesses(args);
     }
 

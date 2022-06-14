@@ -6,3 +6,4 @@ int getNumberOfAliases();
 void printAliases();
 void createNewAlias(char* aliasName, char* aliasValue);
 void removeAlias(char* aliasName);
+void printAliasHelp();
