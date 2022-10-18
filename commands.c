@@ -137,7 +137,7 @@ void initShellVariables()
     shellVarValue = malloc(sizeof(char*) * shellVarListSize);
     shellVarValue[0] = getenv("PATH");
  //   shellVarValue[1] is set when prompt is changed in setPrompt()
- //   shellVarValue[1] = prompt;
+    shellVarValue[1] = getenv("PROMPT");
     shellVarValue[2] = getenv("PWD");
     shellVarValue[3] = getenv("USER");
     shellVarValue[4] = getenv("HOME");
@@ -165,6 +165,9 @@ int (*internals[])(char **) =
 
 void processCommandsFromFile(char* buffer)
 {
+    if(buffer == NULL)
+        return;
+
     char **list = parser(buffer);
 
     //check for hashtag and doesnt execute if first character is a hashtag(comment support)
@@ -196,7 +199,7 @@ int countInternals()
 int internalCd(char** args)
 {
     if(args[1] == NULL) { fprintf(stderr, "Error: no arguments provided\n"); return 0;}
-    else if(chdir(args[1]) < 0) { fprintf(stderr, "Error: direcotry does not exist\n"); return 0;}
+    else if(chdir(args[1]) < 0) { fprintf(stderr, "Error: %s does not exist\n", args[1]); return 0;}
 
     //updates prompt
     setPrompt();
@@ -350,15 +353,39 @@ int getSource(char* filePath)
             puts("File does not exist");
             return 1;
         }
-        while (!feof(file))
+        if (!feof(file))
         {
-            char *line = NULL;
-            size_t len = 0;
-            while (getline(&line, &len, file) != -1)
+            size_t len = 512;
+            char *line = malloc(sizeof (char) * len);
+            //TODO THIS MIGHT BE THE CAUSE OF SOURCE EXECUTING SOME LINES TWICE
+            while (true)
             {
-                line[strcspn(line, "\n")] = 0;
+                free(line);
+                line = malloc(sizeof (char) * len);
+//                if(getline(&line, &len, file) == EOF)
+//                    break;
+//
+//                int lineLen = strlen(line);
+//                line[lineLen-1] = 0;
+//                processCommandsFromFile(line);
+                line = fgets(line, len, file);
+                if(feof(file))
+                    break;
+                int lineLen = strlen(line);
+
+                //removing \n using line[lineLen-1] = 0 does not work for some reason
+                for(int i = lineLen; i > 0; i--)
+                {
+                    if(line[i] == 10)
+                    {
+                        line[i] = 0;
+                        break;
+                    }
+                }
+//                printf("\n\t\t %s\n", line);
                 processCommandsFromFile(line);
             }
+            free(line);
             fclose(file);
             return 0;
         }
@@ -407,7 +434,8 @@ int reassignVar(char* var, char* newValue)
     {
         if(strcmp(var, shellVarName[i]) == 0)
         {
-            shellVarValue[i] = newValue;
+            shellVarValue[i] = realloc(shellVarValue[i], sizeof(char) * strlen(newValue));
+            strcpy(shellVarValue[i], newValue);
             fprintf(stdout, "%s = %s\n", shellVarName[i], shellVarValue[i]);
             varExists = true;
         }
@@ -624,6 +652,9 @@ int executeCommandsWithPipeline(char**  args)
                 waitpid(pid, &status, 0);
             }
         }
+        //may not be necessary to use waitpid
+        int childStatus;
+        waitpid(-1, &childStatus, WIFEXITED(-1));
         return 1;
     }
 

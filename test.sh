@@ -1,14 +1,7 @@
-echo hello world abc 123 | grep "world"
-cd /home
-#alias -n abc pwd
-#abc
-
+echo hello world abc 12345 |  grep world
+#this is a comment
+cd /home/jean/dev/smash
 pwd
+ls
 
-echo -------------------
-
-ABC=testing12345
-echo $ABC
-#alias
-#def=hello
-#echo $def
+PIPELINES ARE CAUSING THE UNDEFINED BEHAVIOUR
